@@ -1,0 +1,25 @@
+# Local profile: run without Docker/MySQL using in-memory H2 (MySQL-compatible mode).
+# Usage: mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:ferwafa;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+ferwafa:
+  cors:
+    allowed-origins: http://localhost:8080,http://localhost:8081,http://127.0.0.1:8080,http://127.0.0.1:8081,http://localhost:3000,http://10.0.2.2:8081

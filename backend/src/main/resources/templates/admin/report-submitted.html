@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Submitted Reports')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 th:text="${title}">Submitted Match Reports</h2>
+        <a href="/admin/reports" class="btn btn-outline-secondary btn-sm">← Approvals</a>
+    </div>
+
+    <div th:if="${pendingReports.isEmpty()}" class="alert alert-info">No submitted reports waiting for approval.</div>
+
+    <div class="card" th:unless="${pendingReports.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead class="table-success">
+                <tr>
+                    <th>Week</th>
+                    <th>Fixture</th>
+                    <th>Match</th>
+                    <th>Score</th>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Goals</th>
+                    <th>Card</th>
+                    <th>Referee</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${pendingReports}">
+                    <td th:text="${r.week}"></td>
+                    <td th:text="${'#' + r.fixtureId}"></td>
+                    <td th:text="${r.matchLabel}"></td>
+                    <td>
+                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + '–' + r.awayScore}">0–0</span>
+                        <span th:unless="${r.homeScore != null}">—</span>
+                    </td>
+                    <td th:text="${r.playerName}"></td>
+                    <td th:text="${r.teamName}"></td>
+                    <td th:text="${r.goal}"></td>
+                    <td>
+                        <span th:class="${r.card.name() == 'RED' ? 'badge text-bg-danger' : (r.card.name() == 'YELLOW' ? 'badge text-bg-warning' : 'text-muted')}"
+                              th:text="${r.card.name() == 'NONE' ? '—' : r.card}"></span>
+                    </td>
+                    <td th:text="${r.refereeName}"></td>
+                    <td><span class="badge text-bg-warning text-dark">SUBMITTED</span></td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">Open</a>
+                        <button class="btn btn-sm btn-success"
+                                th:onclick="'approve(' + ${r.reportId} + ')'">Approve</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+async function approve(id) {
+    if (!confirm('Approve this fixture report?')) return;
+    try {
+        await apiCall('PUT', `/api/reports/${id}/approve`);
+        showToast('Approved');
+        setTimeout(() => location.reload(), 800);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+</script>
+</body>
+</html>

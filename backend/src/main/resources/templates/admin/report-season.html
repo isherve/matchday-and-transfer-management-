@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Season Record')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Season Record <small class="text-muted" th:text="${season}"></small></h2>
+        <a class="btn btn-outline-success btn-sm" th:href="@{/api/reports/standings/pdf(season=${season})}" target="_blank">PDF</a>
+    </div>
+    <div class="card table-responsive mb-4">
+        <table class="table table-striped mb-0">
+            <thead class="table-success">
+            <tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Ded</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${standings}">
+                <td th:text="${row.position}"></td>
+                <td th:text="${row.teamName}"></td>
+                <td th:text="${row.played}"></td>
+                <td th:text="${row.won}"></td>
+                <td th:text="${row.drawn}"></td>
+                <td th:text="${row.lost}"></td>
+                <td th:text="${row.goalsFor}"></td>
+                <td th:text="${row.goalsAgainst}"></td>
+                <td th:text="${row.goalDifference}"></td>
+                <td class="fw-bold" th:text="${row.points}"></td>
+                <td th:text="${row.pointsDeducted}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">Top Scorers</div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between" th:each="s,iter : ${topScorers}">
+                <span th:text="${iter.count + '. ' + s.playerName + ' (' + s.teamName + ')'}"></span>
+                <strong th:text="${s.goals}"></strong>
+            </li>
+            <li class="list-group-item text-muted" th:if="${topScorers == null or topScorers.isEmpty()}">No scorers yet</li>
+        </ul>
+    </div>
+    <div class="card" th:if="${cards != null}">
+        <div class="card-header">Cards leaderboard</div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between" th:each="c,iter : ${cards}">
+                <span th:text="${iter.count + '. ' + c.playerName + ' (' + c.teamName + ')'}"></span>
+                <span>
+                    <span class="badge text-bg-danger me-1" th:text="${c.redCards + 'R'}"></span>
+                    <span class="badge text-bg-warning text-dark" th:text="${c.yellowCards + 'Y'}"></span>
+                </span>
+            </li>
+        </ul>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

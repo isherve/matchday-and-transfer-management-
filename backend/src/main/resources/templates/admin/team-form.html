@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Add Team')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Add New Team</h2>
+    <form id="teamForm" class="card p-4 col-lg-8">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Club name</label>
+                <input class="form-control" id="name" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Stadium</label>
+                <input class="form-control" id="stadium">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Login username</label>
+                <input class="form-control" id="username" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required value="password">
+            </div>
+            <div class="col-12">
+                <label class="form-label">Logo URL (optional)</label>
+                <input class="form-control" id="logo">
+            </div>
+        </div>
+        <div id="formError" class="alert alert-danger d-none mt-3"></div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Create Team</button>
+            <a href="/admin/teams" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+document.getElementById('teamForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.getElementById('formError');
+    err.classList.add('d-none');
+    try {
+        await apiCall('POST', '/api/teams', {
+            name: document.getElementById('name').value,
+            stadium: document.getElementById('stadium').value || null,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            logo: document.getElementById('logo').value || null
+        });
+        showToast('Team created');
+        setTimeout(() => location.href = '/admin/teams', 700);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Register Member')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: team-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Register Team Member</h2>
+    <form id="memberForm" class="card p-4 col-lg-8">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">First name</label>
+                <input class="form-control" id="fname" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Last name</label>
+                <input class="form-control" id="lname" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Shirt number</label>
+                <input type="number" class="form-control" id="number" min="1" max="99">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Role</label>
+                <select class="form-select" id="roleInTeam">
+                    <option value="PLAYER">PLAYER</option>
+                    <option value="STAFF">STAFF</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Position</label>
+                <input class="form-control" id="position" placeholder="e.g. FW, MF, GK">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Post / title</label>
+                <input class="form-control" id="post" placeholder="e.g. Coach">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Contract</label>
+                <input class="form-control" id="contract" value="2025/26">
+            </div>
+        </div>
+        <div id="formError" class="alert alert-danger d-none mt-3"></div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save Member</button>
+            <a href="/team/members" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script th:inline="javascript">
+    const teamId = [[${team.teamId}]];
+    document.getElementById('memberForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = document.getElementById('formError');
+        err.classList.add('d-none');
+        try {
+            await apiCall('POST', `/api/teams/${teamId}/members`, {
+                fname: document.getElementById('fname').value,
+                lname: document.getElementById('lname').value,
+                number: document.getElementById('number').value ? parseInt(document.getElementById('number').value) : null,
+                roleInTeam: document.getElementById('roleInTeam').value,
+                position: document.getElementById('position').value || null,
+                post: document.getElementById('post').value || null,
+                contract: document.getElementById('contract').value || null
+            });
+            showToast('Member registered');
+            setTimeout(() => location.href = '/team/members', 700);
+        } catch (ex) {
+            err.textContent = ex.message;
+            err.classList.remove('d-none');
+        }
+    });
+</script>
+</body>
+</html>

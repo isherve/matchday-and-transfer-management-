@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Teams')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Teams</h2>
+        <a href="/admin/teams/new" class="btn btn-success">Add Team</a>
+    </div>
+    <div class="table-responsive card">
+        <table class="table table-striped mb-0">
+            <thead><tr><th>ID</th><th>Name</th><th>Stadium</th><th>Username</th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${teams}">
+                <td th:text="${t.teamId}"></td>
+                <td th:text="${t.name}"></td>
+                <td th:text="${t.stadium}"></td>
+                <td th:text="${t.username}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

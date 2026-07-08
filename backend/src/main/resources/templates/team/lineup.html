@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Team Lineup')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: team-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Next Match Lineup</h2>
+    <div class="alert alert-info" th:if="${suspensions != null and !suspensions.isEmpty()}">
+        <strong>Suspended players</strong> are highlighted in red and cannot be selected.
+    </div>
+    <form id="lineupForm" class="card p-4">
+        <input type="hidden" id="teamId" th:value="${team != null ? team.teamId : ''}">
+        <div class="mb-3">
+            <label class="form-label">Select Fixture</label>
+            <select class="form-select" id="fixtureSelect" onchange="location.href='?fixtureId='+this.value">
+                <option th:each="f : ${fixtures}" th:value="${f.id}" th:text="${'Week ' + f.week + ': ' + f.homeTeamName + ' vs ' + f.awayTeamName}"
+                        th:selected="${f.id == fixtureId}"></option>
+            </select>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th></th><th>#</th><th>Player</th><th>Position</th><th>Status</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${players}" th:classappend="${p.suspended} ? 'suspended-player' : ''">
+                    <td>
+                        <input type="checkbox" class="form-check-input player-check" th:value="${p.memberId}"
+                               th:disabled="${p.suspended}"
+                               th:checked="${lineup != null and lineup.?[memberId == p.memberId].size() > 0}">
+                    </td>
+                    <td th:text="${p.playerNumber}"></td>
+                    <td th:text="${p.playerName}"></td>
+                    <td th:text="${p.position}"></td>
+                    <td>
+                        <span th:if="${p.suspended}" class="suspended-badge" th:text="${p.suspensionReason}">Suspended</span>
+                        <span th:unless="${p.suspended}" class="text-success">Eligible</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="lineupError" class="alert alert-danger d-none"></div>
+        <button type="submit" class="btn btn-primary">Save Lineup</button>
+    </form>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script th:inline="javascript">
+    const fixtureId = [[${fixtureId}]];
+    const teamId = [[${team != null ? team.teamId : null}]] || localStorage.getItem('ferwafa_entity_id');
+    document.getElementById('lineupForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errEl = document.getElementById('lineupError');
+        errEl.classList.add('d-none');
+        const memberIds = [...document.querySelectorAll('.player-check:checked')].map(c => parseInt(c.value));
+        try {
+            await apiCall('POST', `/api/fixtures/${fixtureId}/lineup`, { teamId: parseInt(teamId), memberIds });
+            showToast('Lineup saved successfully');
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.classList.remove('d-none');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h2 th:text="${title}">Report</h2>
+        <button class="btn btn-outline-success btn-sm no-print" onclick="window.print()">Print</button>
+    </div>
+    <div class="card table-responsive" th:if="${data != null and !data.isEmpty()}">
+        <table class="table table-striped mb-0">
+            <thead class="table-success">
+            <tr>
+                <th th:each="header : ${data[0].keySet()}" th:text="${header}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${data}">
+                <td th:each="val : ${row.values()}" th:text="${val}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="alert alert-info" th:if="${data == null or data.isEmpty()}">No data available.</div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

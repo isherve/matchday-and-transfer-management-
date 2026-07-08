@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Fixtures')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Fixtures</h2>
+
+    <div class="card p-4 mb-4">
+        <h5>Create Fixture</h5>
+        <form id="fixtureForm" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Home team</label>
+                <select class="form-select" id="homeTeamId" required>
+                    <option th:each="t : ${teams}" th:value="${t.teamId}" th:text="${t.name}"></option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Away team</label>
+                <select class="form-select" id="awayTeamId" required>
+                    <option th:each="t : ${teams}" th:value="${t.teamId}" th:text="${t.name}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Week</label>
+                <input type="number" class="form-control" id="week" value="4" min="1" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" id="matchDate" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Time</label>
+                <input type="time" class="form-control" id="matchTime" value="15:00" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Stadium</label>
+                <input class="form-control" id="stadium" value="Kigali Stadium">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Season</label>
+                <input class="form-control" id="season" value="2025/26" required>
+            </div>
+            <div class="col-md-5 d-flex align-items-end">
+                <button type="submit" class="btn btn-success">Create Fixture</button>
+            </div>
+        </form>
+        <div id="fixtureError" class="alert alert-danger d-none mt-3"></div>
+    </div>
+
+    <div class="table-responsive card">
+        <table class="table table-striped mb-0">
+            <thead>
+            <tr><th>Week</th><th>Match</th><th>Score</th><th>Date</th><th>Stadium</th><th>Referee</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="f : ${fixtures}">
+                <td th:text="${f.week}"></td>
+                <td th:text="${f.homeTeamName + ' vs ' + f.awayTeamName}"></td>
+                <td>
+                    <span th:if="${f.homeScore != null}" th:text="${f.homeScore + ' - ' + f.awayScore}"></span>
+                    <span th:unless="${f.homeScore != null}" class="text-muted">—</span>
+                </td>
+                <td th:text="${f.matchDate}"></td>
+                <td th:text="${f.stadium}"></td>
+                <td>
+                    <span th:if="${f.refereeName != null}" th:text="${f.refereeName}"></span>
+                    <select th:unless="${f.refereeName != null}" class="form-select form-select-sm"
+                            th:onchange="'assignRef(' + ${f.id} + ', this.value)'">
+                        <option value="">Assign referee…</option>
+                        <option th:each="r : ${referees}" th:value="${r.refereeId}"
+                                th:text="${r.fname + ' ' + r.lname}"></option>
+                    </select>
+                </td>
+                <td><span class="badge bg-secondary" th:text="${f.status}"></span></td>
+                <td>
+                    <button th:if="${f.status.name() == 'REPORTED'}" class="btn btn-sm btn-success"
+                            th:onclick="'approveReport(' + ${f.id} + ')'">Approve</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+document.getElementById('matchDate').valueAsDate = new Date();
+document.getElementById('fixtureForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.getElementById('fixtureError');
+    err.classList.add('d-none');
+    try {
+        await apiCall('POST', '/api/fixtures', {
+            homeTeamId: parseInt(document.getElementById('homeTeamId').value),
+            awayTeamId: parseInt(document.getElementById('awayTeamId').value),
+            week: parseInt(document.getElementById('week').value),
+            stadium: document.getElementById('stadium').value,
+            matchDate: document.getElementById('matchDate').value,
+            matchTime: document.getElementById('matchTime').value.length === 5
+                ? document.getElementById('matchTime').value + ':00'
+                : document.getElementById('matchTime').value,
+            season: document.getElementById('season').value
+        });
+        showToast('Fixture created');
+        setTimeout(() => location.reload(), 700);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
+});
+async function assignRef(fixtureId, refereeId) {
+    if (!refereeId) return;
+    try {
+        await apiCall('PUT', `/api/fixtures/${fixtureId}/assign-referee`, { refereeId: parseInt(refereeId) });
+        showToast('Referee assigned');
+        setTimeout(() => location.reload(), 700);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+async function approveReport(fixtureId) {
+    if (!confirm('Approve all reports for this fixture? This triggers the suspension engine.')) return;
+    try {
+        const reports = await apiCall('GET', `/api/fixtures/${fixtureId}/report`);
+        if (reports.length > 0) {
+            await apiCall('PUT', `/api/reports/${reports[0].reportId}/approve`);
+            showToast('Report approved');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('No report entries found', 'warning');
+        }
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+</script>
+</body>
+</html>
