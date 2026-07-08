@@ -45,6 +45,11 @@ Data uses in-memory H2 with seed data — fine for demos; it resets when the ser
 3. Render reads `render.yaml` from the repo root
 4. **Create** → copy the generated `.onrender.com` URL
 
+## Manual redeploy (optional)
+
+If you connected Render via Blueprint, pushes to `main` redeploy automatically.  
+You do **not** need a GitHub Actions workflow for Render.
+
 ## Flutter app
 
 ```bash
