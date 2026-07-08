@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Admin Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 th:text="${teams.size()}">0</h5>
+                    <p class="text-muted mb-0">Teams</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 th:text="${fixtures.size()}">0</h5>
+                    <p class="text-muted mb-0">Fixtures</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card warning">
+                <div class="card-body">
+                    <h5 th:text="${pendingReports.size()}">0</h5>
+                    <p class="text-muted mb-0">Pending Reports</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 th:text="${punishments.size()}">0</h5>
+                    <p class="text-muted mb-0">Sanctions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Pending Match Reports</span>
+                    <a href="/admin/reports" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${pendingReports.isEmpty()}" class="p-4 text-muted text-center">No pending reports</div>
+                    <ul class="list-group list-group-flush" th:unless="${pendingReports.isEmpty()}">
+                        <li class="list-group-item" th:each="r : ${pendingReports}">
+                            Fixture #<span th:text="${r.fixtureId}"></span> - <span th:text="${r.playerName}"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Quick Links</div>
+                <div class="card-body">
+                    <a href="/admin/teams/new" class="btn btn-success me-2 mb-2">Add Team</a>
+                    <a href="/admin/fixtures" class="btn btn-outline-success me-2 mb-2">Fixtures</a>
+                    <a href="/admin/reports/season" class="btn btn-outline-success me-2 mb-2">Season Record</a>
+                    <a href="/swagger-ui/index.html" class="btn btn-outline-secondary mb-2" target="_blank">API Docs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

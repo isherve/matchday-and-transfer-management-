@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Team Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: team-nav}"></nav>
+<main class="container py-4">
+    <h2 th:text="${team.name} + ' - Dashboard'">Team Dashboard</h2>
+    <div class="row g-4 mt-2">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">Upcoming Fixtures</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item" th:each="f : ${fixtures}" th:text="${'Week ' + f.week + ': ' + f.homeTeamName + ' vs ' + f.awayTeamName + ' (' + f.status + ')'}"></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">Squad (<span th:text="${members.size()}"></span>)</div>
+                <div class="card-body">
+                    <a href="/team/members" class="btn btn-outline-primary btn-sm">Manage Squad</a>
+                    <a href="/team/lineup" class="btn btn-primary btn-sm">Build Lineup</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

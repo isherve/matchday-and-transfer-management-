@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Transfers')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: team-nav}"></nav>
+<main class="container py-4">
+    <h2 class="mb-4">Transfer Requests</h2>
+
+    <div class="card p-4 mb-4">
+        <h5>Create Transfer Request</h5>
+        <form id="transferForm" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Your player</label>
+                <select class="form-select" id="memberId" required>
+                    <option value="">Select player</option>
+                    <option th:each="m : ${members}" th:if="${m.roleInTeam.name() == 'PLAYER'}"
+                            th:value="${m.memberId}"
+                            th:text="${'#' + m.number + ' ' + m.fname + ' ' + m.lname}"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">To club</label>
+                <select class="form-select" id="teamToId" required>
+                    <option value="">Select club</option>
+                    <option th:each="t : ${teams}" th:if="${t.teamId != team.teamId}"
+                            th:value="${t.teamId}" th:text="${t.name}"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Post</label>
+                <input class="form-control" id="post" placeholder="optional">
+            </div>
+            <div class="col-12">
+                <div id="transferError" class="alert alert-danger d-none"></div>
+                <button type="submit" class="btn btn-primary">Submit Request</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card table-responsive">
+        <table class="table table-striped mb-0">
+            <thead>
+            <tr><th>Player</th><th>From</th><th>To</th><th>Status</th><th>Requested</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="tr : ${transfers}">
+                <td th:text="${tr.memberName}"></td>
+                <td th:text="${tr.teamFromName}"></td>
+                <td th:text="${tr.teamToName}"></td>
+                <td><span class="badge bg-secondary" th:text="${tr.status}"></span></td>
+                <td th:text="${tr.requestDate}"></td>
+                <td>
+                    <button th:if="${tr.status.name() == 'REQUESTED' and tr.teamToId == team.teamId}"
+                            class="btn btn-sm btn-success me-1"
+                            th:onclick="'actTransfer(' + ${tr.id} + ',\'approve\')'">Approve</button>
+                    <button th:if="${tr.status.name() == 'REQUESTED' and tr.teamToId == team.teamId}"
+                            class="btn btn-sm btn-outline-danger"
+                            th:onclick="'actTransfer(' + ${tr.id} + ',\'reject\')'">Reject</button>
+                </td>
+            </tr>
+            <tr th:if="${transfers.isEmpty()}">
+                <td colspan="6" class="text-center text-muted py-4">No transfers</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script th:inline="javascript">
+    const teamFromId = [[${team.teamId}]];
+    document.getElementById('transferForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = document.getElementById('transferError');
+        err.classList.add('d-none');
+        try {
+            await apiCall('POST', '/api/transfers', {
+                memberId: parseInt(document.getElementById('memberId').value),
+                teamFromId,
+                teamToId: parseInt(document.getElementById('teamToId').value),
+                post: document.getElementById('post').value || null
+            });
+            showToast('Transfer requested');
+            setTimeout(() => location.reload(), 700);
+        } catch (ex) {
+            err.textContent = ex.message;
+            err.classList.remove('d-none');
+        }
+    });
+    async function actTransfer(id, action) {
+        try {
+            await apiCall('PUT', `/api/transfers/${id}/${action}`);
+            showToast('Transfer ' + action + 'd');
+            setTimeout(() => location.reload(), 700);
+        } catch (e) { showToast(e.message, 'danger'); }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Match Report')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <a href="/admin/reports" class="text-decoration-none small">← Back to approvals</a>
+            <h2 class="mt-1" th:text="${fixture.homeTeamName + ' vs ' + fixture.awayTeamName}">Match</h2>
+            <p class="text-muted mb-0">
+                Week <span th:text="${fixture.week}"></span>
+                · <span th:text="${fixture.matchDate}"></span>
+                · <span th:text="${fixture.stadium}"></span>
+                · Referee: <span th:text="${fixture.refereeName} ?: '—'"></span>
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="display-6 fw-bold text-success"
+                 th:if="${fixture.homeScore != null}"
+                 th:text="${fixture.homeScore + ' – ' + fixture.awayScore}">0 – 0</div>
+            <span class="badge bg-secondary" th:text="${fixture.status}"></span>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Match report entries</span>
+            <button class="btn btn-sm btn-success"
+                    th:if="${fixture.status.name() == 'REPORTED' and !entries.isEmpty()}"
+                    th:onclick="'approve(' + ${entries[0].reportId} + ')'">Approve entire report</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Goals</th>
+                    <th>Goal min</th>
+                    <th>Card</th>
+                    <th>Card min</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="e : ${entries}">
+                    <td th:text="${e.playerName}"></td>
+                    <td th:text="${e.teamName}"></td>
+                    <td th:text="${e.goal}"></td>
+                    <td th:text="${e.goalMin} ?: '—'"></td>
+                    <td>
+                        <span th:if="${e.card.name() == 'YELLOW'}" class="badge text-bg-warning">YELLOW</span>
+                        <span th:if="${e.card.name() == 'RED'}" class="badge text-bg-danger">RED</span>
+                        <span th:if="${e.card.name() == 'NONE'}" class="text-muted">NONE</span>
+                    </td>
+                    <td th:text="${e.cardMin} ?: '—'"></td>
+                    <td>
+                        <span th:class="${e.status.name() == 'APPROVED' ? 'badge text-bg-success' : 'badge text-bg-warning text-dark'}"
+                              th:text="${e.status}"></span>
+                    </td>
+                </tr>
+                <tr th:if="${entries.isEmpty()}">
+                    <td colspan="7" class="text-center text-muted py-4">No report entries for this fixture yet.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+async function approve(id) {
+    if (!confirm('Approve this match report? Suspensions will be applied.')) return;
+    try {
+        await apiCall('PUT', `/api/reports/${id}/approve`);
+        showToast('Report approved');
+        setTimeout(() => location.reload(), 800);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+</script>
+</body>
+</html>

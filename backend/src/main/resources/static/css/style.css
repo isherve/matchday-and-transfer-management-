@@ -1,0 +1,16 @@
+:root {
+    --ferwafa-green: #006633;
+    --ferwafa-gold: #FAD201;
+}
+
+body { font-family: 'Segoe UI', system-ui, sans-serif; }
+.login-page { background: linear-gradient(135deg, #006633 0%, #004422 100%); min-height: 100vh; }
+.stat-card { border-left: 4px solid var(--ferwafa-green); }
+.stat-card.warning { border-left-color: #ffc107; }
+.stat-card h5 { font-size: 2rem; font-weight: 700; color: var(--ferwafa-green); }
+.suspended-player { background-color: #f8d7da !important; color: #842029; }
+.suspended-badge { background: #dc3545; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; }
+@media print {
+    .navbar, .btn, .no-print { display: none !important; }
+    .card { border: 1px solid #ddd !important; }
+}

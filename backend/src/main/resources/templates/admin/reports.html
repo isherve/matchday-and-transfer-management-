@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Report Approval')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Match Report Approval</h2>
+        <a href="/admin/reports/submitted" class="btn btn-outline-success btn-sm">All submitted →</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card warning">
+                <div class="card-body">
+                    <h5 th:text="${pendingReports.size()}">0</h5>
+                    <p class="text-muted mb-0">Pending approval</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 th:text="${approvedReports.size()}">0</h5>
+                    <p class="text-muted mb-0">Approved entries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${pendingReports.isEmpty()}" class="alert alert-success">All reports are up to date — nothing pending.</div>
+
+    <div class="card mb-4" th:unless="${pendingReports.isEmpty()}">
+        <div class="card-header fw-semibold">Awaiting approval</div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Week</th>
+                    <th>Match</th>
+                    <th>Score</th>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Goals</th>
+                    <th>Card</th>
+                    <th>Referee</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${pendingReports}">
+                    <td th:text="${r.week}"></td>
+                    <td>
+                        <a th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}" th:text="${r.matchLabel}">Match</a>
+                    </td>
+                    <td>
+                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + '–' + r.awayScore}"></span>
+                        <span th:unless="${r.homeScore != null}" class="text-muted">—</span>
+                    </td>
+                    <td th:text="${r.playerName}"></td>
+                    <td th:text="${r.teamName}"></td>
+                    <td>
+                        <span th:text="${r.goal}"></span>
+                        <small class="text-muted" th:if="${r.goalMin != null}" th:text="${' (' + r.goalMin + &quot;'&quot; + ')'}"></small>
+                    </td>
+                    <td>
+                        <span th:if="${r.card.name() == 'YELLOW'}" class="badge text-bg-warning" th:text="${r.card}"></span>
+                        <span th:if="${r.card.name() == 'RED'}" class="badge text-bg-danger" th:text="${r.card}"></span>
+                        <span th:if="${r.card.name() == 'NONE'}" class="text-muted">—</span>
+                        <small class="text-muted" th:if="${r.cardMin != null}" th:text="${' ' + r.cardMin + &quot;'&quot;}"></small>
+                    </td>
+                    <td th:text="${r.refereeName}"></td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary me-1"
+                           th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">View</a>
+                        <button class="btn btn-sm btn-success"
+                                th:onclick="'approve(' + ${r.reportId} + ')'">Approve</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" th:unless="${approvedReports.isEmpty()}">
+        <div class="card-header fw-semibold">Recently approved</div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Week</th>
+                    <th>Match</th>
+                    <th>Player</th>
+                    <th>Goals</th>
+                    <th>Card</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r, iter : ${approvedReports}" th:if="${iter.count <= 12}">
+                    <td th:text="${r.week}"></td>
+                    <td th:text="${r.matchLabel}"></td>
+                    <td th:text="${r.playerName}"></td>
+                    <td th:text="${r.goal}"></td>
+                    <td th:text="${r.card}"></td>
+                    <td><span class="badge text-bg-success">APPROVED</span></td>
+                    <td>
+                        <a class="btn btn-sm btn-link"
+                           th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">Details</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+async function approve(id) {
+    if (!confirm('Approve this fixture report? Suspensions will be applied for the whole match.')) return;
+    try {
+        await apiCall('PUT', `/api/reports/${id}/approve`);
+        showToast('Report approved');
+        setTimeout(() => location.reload(), 800);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+</script>
+</body>
+</html>
