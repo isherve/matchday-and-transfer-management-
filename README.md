@@ -11,11 +11,23 @@ Production-ready monorepo for the Rwanda Premier (National) League — digitizin
 └── README.md
 ```
 
+## Hosting (recommended: Railway)
+
+This app is **Spring Boot + MySQL** — deploy on **[Railway](https://railway.app)**, not Vercel.
+
+Step-by-step: see [RAILWAY.md](./RAILWAY.md). Summary:
+
+1. Sign in to Railway with GitHub
+2. New Project → Deploy from GitHub → this repo
+3. Add a **MySQL** database to the project and link it to the backend
+4. Set `JWT_SECRET` (and optionally `CORS_ORIGINS`)
+5. Generate a public domain → open `/login`
+
 ## Prerequisites
 
 - **Java 17+**
 - **Maven 3.9+** (or use `backend/mvnw`)
-- **Docker & Docker Compose** (for MySQL)
+- **Docker & Docker Compose** (for local MySQL)
 - **Flutter 3.x** (for referee mobile app)
 
 ## Quick Start

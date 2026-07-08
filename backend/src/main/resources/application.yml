@@ -2,9 +2,10 @@ spring:
   application:
     name: ferwafa-system
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${MYSQL_DATABASE:ferwafa}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${MYSQL_USER:ferwafa}
-    password: ${MYSQL_PASSWORD:ferwafa123}
+    # Local docker-compose / Railway MySQL plugin env vars (MYSQLHOST, MYSQLPORT, …)
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:${MYSQLHOST:localhost}}:${DB_PORT:${MYSQLPORT:3306}}/${MYSQL_DATABASE:${MYSQLDATABASE:ferwafa}}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:${MYSQL_USER:${MYSQLUSER:ferwafa}}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${MYSQL_PASSWORD:${MYSQLPASSWORD:ferwafa123}}}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -25,7 +26,8 @@ spring:
     suffix: .html
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Railway / cloud hosts inject PORT
+  port: ${PORT:${SERVER_PORT:8080}}
   servlet:
     context-path: /
 
