@@ -1,0 +1,20 @@
+# Render Blueprint — free web service (H2 demo DB, no paid MySQL required)
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ferwafa
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
+      - key: YELLOW_CARD_THRESHOLD
+        value: "2"

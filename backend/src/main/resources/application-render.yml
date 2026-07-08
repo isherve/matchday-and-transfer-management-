@@ -1,0 +1,26 @@
+# Free Render deploy: in-memory H2 with full seed data (resets on redeploy).
+# For persistent MySQL later, set SPRING_PROFILES_ACTIVE=default and link a MySQL host.
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:ferwafa;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: true
+  h2:
+    console:
+      enabled: false
+
+ferwafa:
+  jwt:
+    secret: ${JWT_SECRET:ferwafa-jwt-secret-change-in-production-min-256-bits-long-key-here}
+  discipline:
+    yellow-card-threshold: ${YELLOW_CARD_THRESHOLD:2}

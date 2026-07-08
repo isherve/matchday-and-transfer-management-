@@ -11,17 +11,14 @@ Production-ready monorepo for the Rwanda Premier (National) League — digitizin
 └── README.md
 ```
 
-## Hosting (recommended: Railway)
+## Hosting (free)
 
-This app is **Spring Boot + MySQL** — deploy on **[Railway](https://railway.app)**, not Vercel.
+| Platform | Cost | Guide |
+|----------|------|--------|
+| **[Render](https://render.com)** (recommended free) | $0 web tier | [RENDER.md](./RENDER.md) — **one-click:** [Deploy on Render](https://render.com/deploy?repo=https://github.com/isherve/matchday-and-transfer-management-) |
+| [Railway](https://railway.app) | Trial credit, then paid | [RAILWAY.md](./RAILWAY.md) |
 
-Step-by-step: see [RAILWAY.md](./RAILWAY.md). Summary:
-
-1. Sign in to Railway with GitHub
-2. New Project → Deploy from GitHub → this repo
-3. Add a **MySQL** database to the project and link it to the backend
-4. Set `JWT_SECRET` (and optionally `CORS_ORIGINS`)
-5. Generate a public domain → open `/login`
+Vercel cannot run this Java/MySQL stack.
 
 ## Prerequisites
 
