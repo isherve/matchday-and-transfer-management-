@@ -101,7 +101,8 @@ public class SecurityConfig {
                 "https://localhost:*",
                 "https://127.0.0.1:*",
                 "https://*.onrender.com",
-                "https://*.up.railway.app"
+                "https://*.up.railway.app",
+                "https://*.loca.lt"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));

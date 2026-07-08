@@ -6,8 +6,11 @@ services:
     name: ferwafa
     runtime: docker
     plan: free
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    repo: https://github.com/isherve/matchday-and-transfer-management-
+    branch: main
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
