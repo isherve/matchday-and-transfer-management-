@@ -186,7 +186,7 @@ public class ReportExportService {
                 // logo optional
             }
 
-            Paragraph org = new Paragraph("Fédération Rwandaise de Football Association", orgFont);
+            Paragraph org = new Paragraph("Rwanda Football Federation", orgFont);
             org.setSpacingBefore(4);
             document.add(org);
             Paragraph contact = new Paragraph(
