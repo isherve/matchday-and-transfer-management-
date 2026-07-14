@@ -1,24 +1,25 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Match Report')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('results')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <a href="/admin/reports" class="text-decoration-none small">← Back to approvals</a>
+            <a href="/admin/reports" class="text-decoration-none small">â† Back to approvals</a>
             <h2 class="mt-1" th:text="${fixture.homeTeamName + ' vs ' + fixture.awayTeamName}">Match</h2>
             <p class="text-muted mb-0">
                 Week <span th:text="${fixture.week}"></span>
-                · <span th:text="${fixture.matchDate}"></span>
-                · <span th:text="${fixture.stadium}"></span>
-                · Referee: <span th:text="${fixture.refereeName} ?: '—'"></span>
+                Â· <span th:text="${fixture.matchDate}"></span>
+                Â· <span th:text="${fixture.stadium}"></span>
+                Â· Referee: <span th:text="${fixture.refereeName} ?: 'â€”'"></span>
             </p>
         </div>
         <div class="text-end">
             <div class="display-6 fw-bold text-success"
                  th:if="${fixture.homeScore != null}"
-                 th:text="${fixture.homeScore + ' – ' + fixture.awayScore}">0 – 0</div>
+                 th:text="${fixture.homeScore + ' â€“ ' + fixture.awayScore}">0 â€“ 0</div>
             <span class="badge bg-secondary" th:text="${fixture.status}"></span>
         </div>
     </div>
@@ -48,13 +49,13 @@
                     <td th:text="${e.playerName}"></td>
                     <td th:text="${e.teamName}"></td>
                     <td th:text="${e.goal}"></td>
-                    <td th:text="${e.goalMin} ?: '—'"></td>
+                    <td th:text="${e.goalMin} ?: 'â€”'"></td>
                     <td>
                         <span th:if="${e.card.name() == 'YELLOW'}" class="badge text-bg-warning">YELLOW</span>
                         <span th:if="${e.card.name() == 'RED'}" class="badge text-bg-danger">RED</span>
                         <span th:if="${e.card.name() == 'NONE'}" class="text-muted">NONE</span>
                     </td>
-                    <td th:text="${e.cardMin} ?: '—'"></td>
+                    <td th:text="${e.cardMin} ?: 'â€”'"></td>
                     <td>
                         <span th:class="${e.status.name() == 'APPROVED' ? 'badge text-bg-success' : 'badge text-bg-warning text-dark'}"
                               th:text="${e.status}"></span>
@@ -81,3 +82,4 @@ async function approve(id) {
 </script>
 </body>
 </html>
+

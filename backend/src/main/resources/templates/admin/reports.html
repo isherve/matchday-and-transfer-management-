@@ -1,12 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Report Approval')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('results')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Match Report Approval</h2>
-        <a href="/admin/reports/submitted" class="btn btn-outline-success btn-sm">All submitted →</a>
+        <a href="/admin/reports/submitted" class="btn btn-outline-success btn-sm">All submitted â†’</a>
     </div>
 
     <div class="row g-3 mb-4">
@@ -28,7 +29,7 @@
         </div>
     </div>
 
-    <div th:if="${pendingReports.isEmpty()}" class="alert alert-success">All reports are up to date — nothing pending.</div>
+    <div th:if="${pendingReports.isEmpty()}" class="alert alert-success">All reports are up to date â€” nothing pending.</div>
 
     <div class="card mb-4" th:unless="${pendingReports.isEmpty()}">
         <div class="card-header fw-semibold">Awaiting approval</div>
@@ -54,8 +55,8 @@
                         <a th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}" th:text="${r.matchLabel}">Match</a>
                     </td>
                     <td>
-                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + '–' + r.awayScore}"></span>
-                        <span th:unless="${r.homeScore != null}" class="text-muted">—</span>
+                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + 'â€“' + r.awayScore}"></span>
+                        <span th:unless="${r.homeScore != null}" class="text-muted">â€”</span>
                     </td>
                     <td th:text="${r.playerName}"></td>
                     <td th:text="${r.teamName}"></td>
@@ -66,7 +67,7 @@
                     <td>
                         <span th:if="${r.card.name() == 'YELLOW'}" class="badge text-bg-warning" th:text="${r.card}"></span>
                         <span th:if="${r.card.name() == 'RED'}" class="badge text-bg-danger" th:text="${r.card}"></span>
-                        <span th:if="${r.card.name() == 'NONE'}" class="text-muted">—</span>
+                        <span th:if="${r.card.name() == 'NONE'}" class="text-muted">â€”</span>
                         <small class="text-muted" th:if="${r.cardMin != null}" th:text="${' ' + r.cardMin + &quot;'&quot;}"></small>
                     </td>
                     <td th:text="${r.refereeName}"></td>
@@ -128,3 +129,4 @@ async function approve(id) {
 </script>
 </body>
 </html>
+

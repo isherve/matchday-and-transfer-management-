@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Transfers')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: team-nav}"></nav>
-<main class="container py-4">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: team-sidebar('transfers')}"></aside>
+<header th:replace="~{fragments/layout :: team-topbar}"></header>
+<main class="app-main">
     <h2 class="mb-4">Transfer Requests</h2>
 
     <div class="card p-4 mb-4">
@@ -67,6 +68,11 @@
 </main>
 <script th:replace="~{fragments/layout :: scripts}"></script>
 <script th:inline="javascript">
+    document.getElementById('teamTopName').textContent = /*[[${team.name}]]*/ 'Team';
+    const logo = /*[[${team.logo}]]*/ null;
+    if (logo) document.getElementById('teamTopLogo').src = logo;
+</script>
+<script th:inline="javascript">
     const teamFromId = [[${team.teamId}]];
     document.getElementById('transferForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -96,3 +102,4 @@
 </script>
 </body>
 </html>
+

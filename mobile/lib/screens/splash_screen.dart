@@ -22,6 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final auth = context.read<AuthService>();
     await auth.init();
     if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -38,8 +40,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.sports_soccer, size: 80, color: Colors.white.withOpacity(0.9)),
-            const SizedBox(height: 24),
+            Image.asset('assets/images/ferwafa-logo.png', width: 120, height: 120),
+            const SizedBox(height: 20),
             const Text('FERWAFA', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
             const Text('Referee Match Reporting', style: TextStyle(color: Colors.white70, fontSize: 16)),
             const SizedBox(height: 48),

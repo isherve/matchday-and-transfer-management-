@@ -34,12 +34,16 @@ public class V2__seed extends BaseJavaMigration {
         String[] usernames = {"apr", "rayon", "kiyovu", "police", "mukura", "etincelles", "bugesera", "askigali"};
         String[] stadiums = {"Kigali Stadium", "Amahoro Stadium", "Kigali Stadium", "Police Stadium",
             "Huye Stadium", "Rubavu Stadium", "Bugesera Stadium", "Nyamirambo Stadium"};
+        String[] logos = {
+            "/img/teams/apr.svg", "/img/teams/rayon.svg", "/img/teams/kiyovu.svg", "/img/teams/police.svg",
+            "/img/teams/mukura.svg", "/img/teams/etincelles.svg", "/img/teams/bugesera.svg", "/img/teams/askigali.svg"
+        };
 
         for (int i = 0; i < teams.length; i++) {
             exec(conn, """
                 INSERT INTO team (name, logo, stadium, username, password_hash, created_at, updated_at)
-                VALUES (?, NULL, ?, ?, ?, NOW(), NOW())
-                """, teams[i], stadiums[i], usernames[i], pwd);
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                """, teams[i], logos[i], stadiums[i], usernames[i], pwd);
         }
 
         exec(conn, """

@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head(${title})}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h2 th:text="${title}">Report</h2>
-        <button class="btn btn-outline-success btn-sm no-print" onclick="window.print()">Print</button>
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar(${activeNav} ?: 'season')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
+    <div class="report-letterhead no-print">
+        <img th:src="@{/img/ferwafa-logo.svg}" alt="FERWAFA">
+        <div>
+            <h1>Fédération Rwandaise de Football Association</h1>
+            <p>Phone: +250 788 608 988 · P.O BOX: 2000 Kigali – Rwanda · Email: ferwafa@yahoo.fr</p>
+        </div>
     </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="mb-0" th:text="${title}">Report</h2>
+        <div class="no-print d-flex gap-2">
+            <a th:if="${pdfUrl != null}" class="btn btn-teal btn-sm" th:href="${pdfUrl}" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> Export to PDF
+            </a>
+            <button class="btn btn-outline-success btn-sm" onclick="window.print()">Print</button>
+        </div>
+    </div>
+
     <div class="card table-responsive" th:if="${data != null and !data.isEmpty()}">
         <table class="table table-striped mb-0">
-            <thead class="table-success">
+            <thead class="table-primary">
             <tr>
                 <th th:each="header : ${data[0].keySet()}" th:text="${header}"></th>
             </tr>

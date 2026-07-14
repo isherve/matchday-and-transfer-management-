@@ -31,11 +31,25 @@ public class AdminWebController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("teams", teamService.findAll());
+        model.addAttribute("referees", refereeService.findAll());
         model.addAttribute("fixtures", fixtureService.findAll());
+        model.addAttribute("upcomingFixtures", fixtureService.findAll().stream()
+                .filter(f -> f.getStatus() == com.ferwafa.common.FixtureStatus.SCHEDULED
+                        || f.getStatus() == com.ferwafa.common.FixtureStatus.REFEREE_ASSIGNED
+                        || f.getStatus() == com.ferwafa.common.FixtureStatus.POSTPONED)
+                .toList());
         model.addAttribute("pendingReports", matchReportService.getPendingReports());
         model.addAttribute("transfers", transferService.findAll());
         model.addAttribute("punishments", reportExportService.getPunishmentsReport());
+        model.addAttribute("activeSuspensions", reportExportService.getActiveSuspensionsReport());
         return "admin/dashboard";
+    }
+
+    @GetMapping("/referees")
+    public String referees(Model model) {
+        model.addAttribute("referees", refereeService.findAll());
+        model.addAttribute("fixtures", fixtureService.findAll());
+        return "admin/referees";
     }
 
     @GetMapping("/teams")
@@ -82,6 +96,8 @@ public class AdminWebController {
     public String fixturesReport(Model model) {
         model.addAttribute("data", reportExportService.getFixturesReport());
         model.addAttribute("title", "Fixtures Report");
+        model.addAttribute("activeNav", "season");
+        model.addAttribute("pdfUrl", "/api/reports/fixtures/pdf");
         return "admin/report-table";
     }
 
@@ -89,6 +105,8 @@ public class AdminWebController {
     public String punishmentsReport(Model model) {
         model.addAttribute("data", reportExportService.getPunishmentsReport());
         model.addAttribute("title", "Punishments Report");
+        model.addAttribute("activeNav", "punishments");
+        model.addAttribute("pdfUrl", "/api/reports/punishments/pdf");
         return "admin/report-table";
     }
 
@@ -96,6 +114,8 @@ public class AdminWebController {
     public String transfersReport(Model model) {
         model.addAttribute("data", reportExportService.getTransfersReport());
         model.addAttribute("title", "Transfers Report");
+        model.addAttribute("activeNav", "transfers");
+        model.addAttribute("pdfUrl", "/api/reports/transfers/pdf");
         return "admin/report-table";
     }
 

@@ -1,69 +1,94 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Admin Dashboard')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
-    <h2 class="mb-4">Admin Dashboard</h2>
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('home')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
+    <h2 class="mb-4">Dashboard</h2>
+    <p class="text-muted mb-4">Monitor teams, fixtures, referees, match reports, and player sanctions.</p>
+
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <h5 th:text="${teams.size()}">0</h5>
-                    <p class="text-muted mb-0">Teams</p>
-                </div>
-            </div>
+            <div class="card stat-card"><div class="card-body">
+                <h5 th:text="${teams.size()}">0</h5>
+                <p class="mb-0 text-muted">Teams</p>
+                <div class="rnpl">+ RNPL</div>
+            </div></div>
         </div>
         <div class="col-md-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <h5 th:text="${fixtures.size()}">0</h5>
-                    <p class="text-muted mb-0">Fixtures</p>
-                </div>
-            </div>
+            <div class="card stat-card"><div class="card-body">
+                <h5 th:text="${referees != null ? referees.size() : 0}">0</h5>
+                <p class="mb-0 text-muted">Referees</p>
+                <div class="rnpl">+ RNPL</div>
+            </div></div>
         </div>
         <div class="col-md-3">
-            <div class="card stat-card warning">
-                <div class="card-body">
-                    <h5 th:text="${pendingReports.size()}">0</h5>
-                    <p class="text-muted mb-0">Pending Reports</p>
-                </div>
-            </div>
+            <div class="card stat-card warning"><div class="card-body">
+                <h5 th:text="${pendingReports.size()}">0</h5>
+                <p class="mb-0 text-muted">Pending Reports</p>
+                <div class="rnpl">Awaiting approval</div>
+            </div></div>
         </div>
         <div class="col-md-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <h5 th:text="${punishments.size()}">0</h5>
-                    <p class="text-muted mb-0">Sanctions</p>
-                </div>
-            </div>
+            <div class="card stat-card"><div class="card-body">
+                <h5 th:text="${activeSuspensions.size()}">0</h5>
+                <p class="mb-0 text-muted">Suspended Players</p>
+                <div class="rnpl">Active sanctions</div>
+            </div></div>
         </div>
     </div>
+
     <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between">
-                    <span>Pending Match Reports</span>
-                    <a href="/admin/reports" class="btn btn-sm btn-outline-success">View All</a>
+        <div class="col-lg-7">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Next Fixtures</span>
+                    <a href="/admin/fixtures" class="btn btn-sm btn-outline-success">Manage</a>
                 </div>
-                <div class="card-body p-0">
-                    <div th:if="${pendingReports.isEmpty()}" class="p-4 text-muted text-center">No pending reports</div>
-                    <ul class="list-group list-group-flush" th:unless="${pendingReports.isEmpty()}">
-                        <li class="list-group-item" th:each="r : ${pendingReports}">
-                            Fixture #<span th:text="${r.fixtureId}"></span> - <span th:text="${r.playerName}"></span>
-                        </li>
-                    </ul>
+                <div class="panel-body">
+                    <div th:if="${upcomingFixtures.isEmpty()}" class="p-4 text-muted text-center">No upcoming fixtures</div>
+                    <div class="fixture-row" th:each="f, iter : ${upcomingFixtures}" th:if="${iter.index &lt; 6}">
+                        <img class="team-crest" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" th:alt="${f.homeTeamName}">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${f.homeTeamName}">Home</div>
+                        </div>
+                        <div class="match-center">
+                            <div th:text="${f.matchTime}">15:00</div>
+                            <div th:text="${f.stadium}">Stadium</div>
+                        </div>
+                        <div class="flex-grow-1 text-end">
+                            <div class="fw-semibold" th:text="${f.awayTeamName}">Away</div>
+                        </div>
+                        <img class="team-crest" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" th:alt="${f.awayTeamName}">
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header">Quick Links</div>
-                <div class="card-body">
-                    <a href="/admin/teams/new" class="btn btn-success me-2 mb-2">Add Team</a>
-                    <a href="/admin/fixtures" class="btn btn-outline-success me-2 mb-2">Fixtures</a>
-                    <a href="/admin/reports/season" class="btn btn-outline-success me-2 mb-2">Season Record</a>
-                    <a href="/swagger-ui/index.html" class="btn btn-outline-secondary mb-2" target="_blank">API Docs</a>
+        <div class="col-lg-5">
+            <div class="panel mb-4">
+                <div class="panel-header">Suspended Players</div>
+                <div class="panel-body">
+                    <div th:if="${activeSuspensions.isEmpty()}" class="p-4 text-muted text-center">No active suspensions</div>
+                    <div class="member-row suspended-player" th:each="s : ${activeSuspensions}">
+                        <img class="team-crest sm" th:src="${s.teamLogo != null ? s.teamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <div>
+                            <div class="fw-semibold" th:text="${s.player}">Player</div>
+                            <div class="small" th:text="${s.team + ' · ' + s.suspension}">Team</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">Pending Approvals</div>
+                <div class="panel-body p-3">
+                    <div th:if="${pendingReports.isEmpty()}" class="text-muted text-center">No pending reports</div>
+                    <a th:each="r : ${pendingReports}" class="d-block mb-2 text-decoration-none"
+                       th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">
+                        Fixture #<span th:text="${r.fixtureId}"></span>
+                        — <span th:text="${r.playerName}"></span>
+                    </a>
+                    <a href="/admin/reports" class="btn btn-sm btn-ferwafa mt-2">Review Results</a>
                 </div>
             </div>
         </div>

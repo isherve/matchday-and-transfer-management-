@@ -1,30 +1,53 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Team Dashboard')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: team-nav}"></nav>
-<main class="container py-4">
-    <h2 th:text="${team.name} + ' - Dashboard'">Team Dashboard</h2>
-    <div class="row g-4 mt-2">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: team-sidebar('home')}"></aside>
+<header th:replace="~{fragments/layout :: team-topbar}"></header>
+<main class="app-main">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <img class="team-crest" th:src="${team.logo != null ? team.logo : '/img/ferwafa-logo.svg'}" th:alt="${team.name}">
+        <div>
+            <h2 class="mb-0" th:text="${team.name}">Team</h2>
+            <div class="text-muted" th:text="${team.stadium}">Stadium</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">Upcoming Fixtures</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item" th:each="f : ${fixtures}" th:text="${'Week ' + f.week + ': ' + f.homeTeamName + ' vs ' + f.awayTeamName + ' (' + f.status + ')'}"></li>
-                </ul>
+            <div class="panel">
+                <div class="panel-header">Fixtures by week</div>
+                <div class="panel-body">
+                    <div class="fixture-row" th:each="f : ${fixtures}">
+                        <span class="badge text-bg-light">Week <span th:text="${f.week}"></span></span>
+                        <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <span th:text="${f.homeTeamName}"></span>
+                        <span class="text-muted">vs</span>
+                        <span th:text="${f.awayTeamName}"></span>
+                        <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <span class="badge bg-secondary ms-auto" th:text="${f.status}"></span>
+                    </div>
+                    <div th:if="${fixtures.isEmpty()}" class="p-4 text-muted text-center">No fixtures</div>
+                </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">Squad (<span th:text="${members.size()}"></span>)</div>
-                <div class="card-body">
-                    <a href="/team/members" class="btn btn-outline-primary btn-sm">Manage Squad</a>
-                    <a href="/team/lineup" class="btn btn-primary btn-sm">Build Lineup</a>
+            <div class="panel">
+                <div class="panel-header">Squad (<span th:text="${members.size()}"></span>)</div>
+                <div class="p-3">
+                    <p class="small text-muted">Players and staff registered for this club.</p>
+                    <a href="/team/members" class="btn btn-outline-primary btn-sm me-2">Members</a>
+                    <a href="/team/lineup" class="btn btn-primary btn-sm">Set Lineup</a>
                 </div>
             </div>
         </div>
     </div>
 </main>
 <script th:replace="~{fragments/layout :: scripts}"></script>
+<script th:inline="javascript">
+    document.getElementById('teamTopName').textContent = /*[[${team.name}]]*/ 'Team';
+    const logo = /*[[${team.logo}]]*/ null;
+    if (logo) document.getElementById('teamTopLogo').src = logo;
+</script>
 </body>
 </html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Referees')}"></head>
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('referees')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
+    <h2 class="mb-2">Assign Referees</h2>
+    <p class="text-muted mb-4">Select a referee for each scheduled match.</p>
+
+    <div class="panel mb-4">
+        <div class="panel-header">Registered Referees</div>
+        <div class="panel-body">
+            <div class="member-row" th:each="r : ${referees}">
+                <img class="team-crest sm" th:src="@{/img/ferwafa-logo.svg}" alt="">
+                <div>
+                    <div class="fw-semibold" th:text="${r.fname + ' ' + r.lname}">Name</div>
+                    <div class="small text-muted" th:text="${r.email}">email</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">Fixtures needing officials</div>
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                <tr><th>Week</th><th>Match</th><th>Date</th><th>Assign referee</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="f : ${fixtures}">
+                    <td th:text="${f.week}"></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                            <span th:text="${f.homeTeamName}"></span>
+                            <span class="text-muted">vs</span>
+                            <span th:text="${f.awayTeamName}"></span>
+                            <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        </div>
+                    </td>
+                    <td th:text="${f.matchDate}"></td>
+                    <td>
+                        <span th:if="${f.refereeName != null}" class="badge text-bg-success" th:text="${f.refereeName}"></span>
+                        <select th:unless="${f.refereeName != null}" class="form-select form-select-sm"
+                                th:onchange="'assignRef(' + ${f.id} + ', this.value)'">
+                            <option value="">Select referee…</option>
+                            <option th:each="r : ${referees}" th:value="${r.refereeId}"
+                                    th:text="${r.fname + ' ' + r.lname}"></option>
+                        </select>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+async function assignRef(fixtureId, refereeId) {
+    if (!refereeId) return;
+    try {
+        await apiCall('PUT', `/api/fixtures/${fixtureId}/assign-referee`, { refereeId: parseInt(refereeId) });
+        showToast('Referee assigned');
+        setTimeout(() => location.reload(), 600);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+</script>
+</body>
+</html>

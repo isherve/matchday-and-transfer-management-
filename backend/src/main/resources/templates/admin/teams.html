@@ -1,27 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Teams')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h2>Teams</h2>
-        <a href="/admin/teams/new" class="btn btn-success">Add Team</a>
-    </div>
-    <div class="table-responsive card">
-        <table class="table table-striped mb-0">
-            <thead><tr><th>ID</th><th>Name</th><th>Stadium</th><th>Username</th></tr></thead>
-            <tbody>
-            <tr th:each="t : ${teams}">
-                <td th:text="${t.teamId}"></td>
-                <td th:text="${t.name}"></td>
-                <td th:text="${t.stadium}"></td>
-                <td th:text="${t.username}"></td>
-            </tr>
-            </tbody>
-        </table>
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('teams')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
+    <h2 class="mb-4">Teams</h2>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-header">All Teams</div>
+                <div class="panel-body">
+                    <div class="team-row" th:each="t : ${teams}">
+                        <img class="team-crest" th:src="${t.logo != null ? t.logo : '/img/ferwafa-logo.svg'}" th:alt="${t.name}">
+                        <div>
+                            <div class="fw-bold" th:text="${t.name}">Team</div>
+                            <div class="small text-muted" th:text="${t.stadium}">Stadium</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-header">Add New</div>
+                <div class="p-4">
+                    <form id="teamForm">
+                        <div class="mb-3">
+                            <label class="form-label">Team name</label>
+                            <input class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Stadium</label>
+                            <input class="form-control" id="stadium">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required value="password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Logo URL (optional)</label>
+                            <input class="form-control" id="logo" placeholder="/img/teams/apr.svg">
+                        </div>
+                        <div id="formError" class="alert alert-danger d-none"></div>
+                        <button type="submit" class="btn btn-teal">ADD TEAM</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 <script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+document.getElementById('teamForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.getElementById('formError');
+    err.classList.add('d-none');
+    try {
+        await apiCall('POST', '/api/teams', {
+            name: document.getElementById('name').value,
+            stadium: document.getElementById('stadium').value || null,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            logo: document.getElementById('logo').value || null
+        });
+        showToast('Team created');
+        setTimeout(() => location.reload(), 700);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
+});
+</script>
 </body>
 </html>

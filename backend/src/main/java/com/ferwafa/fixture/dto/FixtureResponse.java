@@ -15,8 +15,10 @@ public class FixtureResponse {
     private Long id;
     private Long homeTeamId;
     private String homeTeamName;
+    private String homeTeamLogo;
     private Long awayTeamId;
     private String awayTeamName;
+    private String awayTeamLogo;
     private Integer week;
     private String stadium;
     private LocalDate matchDate;
