@@ -46,8 +46,8 @@ public class SecurityConfig {
                                 "/api/reports/top-scorers", "/api/reports/cards-leaderboard",
                                 "/api/transfer-windows", "/api/transfer-windows/open").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/img/**", "/images/**", "/webjars/**").permitAll()
-                        .requestMatchers("/login", "/team/login").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/images/**", "/webjars/**", "/referee/**").permitAll()
+                        .requestMatchers("/login", "/team/login", "/app", "/referee", "/referee/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/team/**").hasAnyRole("TEAM", "ADMIN")
