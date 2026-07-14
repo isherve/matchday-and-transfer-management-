@@ -35,8 +35,8 @@ public class V2__seed extends BaseJavaMigration {
         String[] stadiums = {"Kigali Stadium", "Amahoro Stadium", "Kigali Stadium", "Police Stadium",
             "Huye Stadium", "Rubavu Stadium", "Bugesera Stadium", "Nyamirambo Stadium"};
         String[] logos = {
-            "/img/teams/apr.svg", "/img/teams/rayon.svg", "/img/teams/kiyovu.svg", "/img/teams/police.svg",
-            "/img/teams/mukura.svg", "/img/teams/etincelles.svg", "/img/teams/bugesera.svg", "/img/teams/askigali.svg"
+            "/img/teams/apr.png", "/img/teams/rayon.png", "/img/teams/kiyovu.png", "/img/teams/police.png",
+            "/img/teams/mukura.png", "/img/teams/etincelles.png", "/img/teams/bugesera.png", "/img/teams/askigali.png"
         };
 
         for (int i = 0; i < teams.length; i++) {

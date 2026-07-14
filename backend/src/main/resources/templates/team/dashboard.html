@@ -6,7 +6,7 @@
 <header th:replace="~{fragments/layout :: team-topbar}"></header>
 <main class="app-main">
     <div class="d-flex align-items-center gap-3 mb-4">
-        <img class="team-crest" th:src="${team.logo != null ? team.logo : '/img/ferwafa-logo.svg'}" th:alt="${team.name}">
+        <img class="team-crest" th:src="${team.logo != null ? team.logo : '/img/ferwafa-logo.png'}" th:alt="${team.name}">
         <div>
             <h2 class="mb-0" th:text="${team.name}">Team</h2>
             <div class="text-muted" th:text="${team.stadium}">Stadium</div>
@@ -20,11 +20,11 @@
                 <div class="panel-body">
                     <div class="fixture-row" th:each="f : ${fixtures}">
                         <span class="badge text-bg-light">Week <span th:text="${f.week}"></span></span>
-                        <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                         <span th:text="${f.homeTeamName}"></span>
                         <span class="text-muted">vs</span>
                         <span th:text="${f.awayTeamName}"></span>
-                        <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                         <span class="badge bg-secondary ms-auto" th:text="${f.status}"></span>
                     </div>
                     <div th:if="${fixtures.isEmpty()}" class="p-4 text-muted text-center">No fixtures</div>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Referees')}"></head>
 <body class="app-body">
@@ -12,7 +12,7 @@
         <div class="panel-header">Registered Referees</div>
         <div class="panel-body">
             <div class="member-row" th:each="r : ${referees}">
-                <img class="team-crest sm" th:src="@{/img/ferwafa-logo.svg}" alt="">
+                <img class="team-crest sm" th:src="@{/img/ferwafa-logo.png}" alt="">
                 <div>
                     <div class="fw-semibold" th:text="${r.fname + ' ' + r.lname}">Name</div>
                     <div class="small text-muted" th:text="${r.email}">email</div>
@@ -33,11 +33,11 @@
                     <td th:text="${f.week}"></td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                            <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                             <span th:text="${f.homeTeamName}"></span>
                             <span class="text-muted">vs</span>
                             <span th:text="${f.awayTeamName}"></span>
-                            <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                            <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                         </div>
                     </td>
                     <td th:text="${f.matchDate}"></td>
@@ -45,7 +45,7 @@
                         <span th:if="${f.refereeName != null}" class="badge text-bg-success" th:text="${f.refereeName}"></span>
                         <select th:unless="${f.refereeName != null}" class="form-select form-select-sm"
                                 th:onchange="'assignRef(' + ${f.id} + ', this.value)'">
-                            <option value="">Select referee…</option>
+                            <option value="">Select refereeâ€¦</option>
                             <option th:each="r : ${referees}" th:value="${r.refereeId}"
                                     th:text="${r.fname + ' ' + r.lname}"></option>
                         </select>
