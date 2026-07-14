@@ -13,6 +13,6 @@ public class RefereeRequest {
     private String image;
     @NotBlank @Email
     private String email;
-    @NotBlank
+    /** Required on create; optional on update (leave blank to keep current access code). */
     private String accessCode;
 }

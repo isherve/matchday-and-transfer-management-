@@ -5,24 +5,40 @@
 <aside th:replace="~{fragments/layout :: admin-sidebar('referees')}"></aside>
 <header th:replace="~{fragments/layout :: admin-topbar}"></header>
 <main class="app-main">
-    <h2 class="mb-2">Assign Referees</h2>
-    <p class="text-muted mb-4">Select officials, set venue, and edit fixture details.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="mb-1">Referees &amp; Assignments</h2>
+            <p class="text-muted mb-0">Add or edit referees, set venues, and assign officials.</p>
+        </div>
+        <button type="button" class="btn btn-ferwafa" onclick="openRefereeModal()">Add Referee</button>
+    </div>
 
     <div class="panel mb-4">
         <div class="panel-header">Registered Referees</div>
-        <div class="panel-body">
-            <div class="member-row" th:each="r : ${referees}">
-                <img class="team-crest sm" th:src="@{/img/ferwafa-logo.png}" alt="">
-                <div>
-                    <div class="fw-semibold" th:text="${r.fname + ' ' + r.lname}">Name</div>
-                    <div class="small text-muted" th:text="${r.email}">email</div>
-                </div>
-            </div>
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${referees}">
+                    <td class="fw-semibold" th:text="${r.fname + ' ' + r.lname}"></td>
+                    <td th:text="${r.email}"></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                th:attr="data-id=${r.refereeId},
+                                         data-fname=${r.fname},
+                                         data-lname=${r.lname},
+                                         data-email=${r.email},
+                                         data-image=${r.image}"
+                                onclick="openRefereeModal(this)">Edit</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <div class="panel">
-        <div class="panel-header">Fixtures needing officials</div>
+        <div class="panel-header">Fixtures — venue &amp; officials</div>
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
                 <thead>
@@ -84,7 +100,47 @@
     </div>
 </main>
 
-<!-- Edit fixture modal -->
+<div class="modal fade" id="refereeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="refereeModalTitle">Add Referee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="refId">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">First name</label>
+                        <input class="form-control" id="refFname" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last name</label>
+                        <input class="form-control" id="refLname" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="refEmail" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Access code</label>
+                        <input class="form-control" id="refAccessCode" placeholder="Required for new; leave blank to keep">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Image URL (optional)</label>
+                        <input class="form-control" id="refImage">
+                    </div>
+                </div>
+                <div id="refError" class="alert alert-danger d-none mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-ferwafa" onclick="saveReferee()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="editFixtureModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -159,14 +215,67 @@
 
 <script th:replace="~{fragments/layout :: scripts}"></script>
 <script>
-let editModal;
+let editModal, refereeModal;
 document.addEventListener('DOMContentLoaded', () => {
     editModal = new bootstrap.Modal(document.getElementById('editFixtureModal'));
+    refereeModal = new bootstrap.Modal(document.getElementById('refereeModal'));
     document.getElementById('editHomeTeamId').addEventListener('change', (e) => {
         const stadium = e.target.selectedOptions[0]?.dataset?.stadium;
         if (stadium) document.getElementById('editStadium').value = stadium;
     });
 });
+
+function openRefereeModal(btn) {
+    document.getElementById('refError').classList.add('d-none');
+    if (btn) {
+        document.getElementById('refereeModalTitle').textContent = 'Edit Referee';
+        document.getElementById('refId').value = btn.dataset.id;
+        document.getElementById('refFname').value = btn.dataset.fname || '';
+        document.getElementById('refLname').value = btn.dataset.lname || '';
+        document.getElementById('refEmail').value = btn.dataset.email || '';
+        document.getElementById('refImage').value = btn.dataset.image || '';
+        document.getElementById('refAccessCode').value = '';
+        document.getElementById('refAccessCode').placeholder = 'Leave blank to keep current code';
+    } else {
+        document.getElementById('refereeModalTitle').textContent = 'Add Referee';
+        document.getElementById('refId').value = '';
+        document.getElementById('refFname').value = '';
+        document.getElementById('refLname').value = '';
+        document.getElementById('refEmail').value = '';
+        document.getElementById('refImage').value = '';
+        document.getElementById('refAccessCode').value = '';
+        document.getElementById('refAccessCode').placeholder = 'Required (e.g. REF004)';
+    }
+    refereeModal.show();
+}
+
+async function saveReferee() {
+    const err = document.getElementById('refError');
+    err.classList.add('d-none');
+    const id = document.getElementById('refId').value;
+    const body = {
+        fname: document.getElementById('refFname').value.trim(),
+        lname: document.getElementById('refLname').value.trim(),
+        email: document.getElementById('refEmail').value.trim(),
+        image: document.getElementById('refImage').value.trim() || null,
+        accessCode: document.getElementById('refAccessCode').value
+    };
+    try {
+        if (id) {
+            if (!body.accessCode) body.accessCode = '';
+            await apiCall('PUT', `/api/referees/${id}`, body);
+            showToast('Referee updated');
+        } else {
+            if (!body.accessCode) throw new Error('Access code is required');
+            await apiCall('POST', '/api/referees', body);
+            showToast('Referee created');
+        }
+        setTimeout(() => location.reload(), 600);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
+}
 
 async function assignRef(fixtureId, refereeId) {
     if (!refereeId) return;

@@ -111,6 +111,12 @@ public class AdminWebController {
         return "admin/report-table";
     }
 
+    @GetMapping("/transfers")
+    public String transfersManage(Model model) {
+        model.addAttribute("transfers", transferService.findAll());
+        return "admin/transfers";
+    }
+
     @GetMapping("/reports/transfers")
     public String transfersReport(Model model) {
         model.addAttribute("data", reportExportService.getTransfersReport());

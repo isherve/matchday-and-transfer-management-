@@ -33,6 +33,9 @@ public class TeamService {
 
     @Transactional
     public TeamResponse create(TeamRequest request) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new BusinessException("Password is required");
+        }
         if (teamRepository.existsByUsername(request.getUsername())) {
             throw new BusinessException("Username already exists");
         }

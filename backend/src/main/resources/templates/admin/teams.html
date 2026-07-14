@@ -5,76 +5,146 @@
 <aside th:replace="~{fragments/layout :: admin-sidebar('teams')}"></aside>
 <header th:replace="~{fragments/layout :: admin-topbar}"></header>
 <main class="app-main">
-    <h2 class="mb-4">Teams</h2>
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="panel">
-                <div class="panel-header">All Teams</div>
-                <div class="panel-body">
-                    <div class="team-row" th:each="t : ${teams}">
-                        <img class="team-crest" th:src="${t.logo != null ? t.logo : '/img/ferwafa-logo.png'}" th:alt="${t.name}">
-                        <div>
-                            <div class="fw-bold" th:text="${t.name}">Team</div>
-                            <div class="small text-muted" th:text="${t.stadium}">Stadium</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="panel">
-                <div class="panel-header">Add New</div>
-                <div class="p-4">
-                    <form id="teamForm">
-                        <div class="mb-3">
-                            <label class="form-label">Team name</label>
-                            <input class="form-control" id="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Stadium</label>
-                            <input class="form-control" id="stadium">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input class="form-control" id="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" required value="password">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Logo URL (optional)</label>
-                            <input class="form-control" id="logo" placeholder="/img/teams/apr.png">
-                        </div>
-                        <div id="formError" class="alert alert-danger d-none"></div>
-                        <button type="submit" class="btn btn-teal">ADD TEAM</button>
-                    </form>
-                </div>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="mb-0">Teams</h2>
+        <button type="button" class="btn btn-ferwafa" onclick="openTeamModal()">Add Team</button>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">All Teams</div>
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                <tr><th></th><th>Name</th><th>Stadium / Venue</th><th>Username</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${teams}">
+                    <td><img class="team-crest sm" th:src="${t.logo != null ? t.logo : '/img/ferwafa-logo.png'}" th:alt="${t.name}"></td>
+                    <td class="fw-semibold" th:text="${t.name}"></td>
+                    <td th:text="${t.stadium != null ? t.stadium : '—'}"></td>
+                    <td th:text="${t.username}"></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                th:attr="data-id=${t.teamId},
+                                         data-name=${t.name},
+                                         data-stadium=${t.stadium},
+                                         data-username=${t.username},
+                                         data-logo=${t.logo}"
+                                onclick="openTeamModal(this)">Edit</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </main>
+
+<div class="modal fade" id="teamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="teamModalTitle">Add Team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="teamId">
+                <div class="mb-3">
+                    <label class="form-label">Team name</label>
+                    <input class="form-control" id="teamName" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Stadium / Venue</label>
+                    <input class="form-control" id="teamStadium" list="stadiumSuggestions">
+                    <datalist id="stadiumSuggestions">
+                        <option value="Kigali Stadium"></option>
+                        <option value="Amahoro Stadium"></option>
+                        <option value="Huye Stadium"></option>
+                        <option value="Nyamirambo Stadium"></option>
+                        <option value="Bugesera Stadium"></option>
+                        <option value="Police Stadium"></option>
+                        <option value="Rubavu Stadium"></option>
+                    </datalist>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Login username</label>
+                    <input class="form-control" id="teamUsername" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="teamPassword" placeholder="Required for new team; leave blank to keep current">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Logo URL</label>
+                    <input class="form-control" id="teamLogo" placeholder="/img/teams/apr.png">
+                </div>
+                <div id="teamError" class="alert alert-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-ferwafa" onclick="saveTeam()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:replace="~{fragments/layout :: scripts}"></script>
 <script>
-document.getElementById('teamForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const err = document.getElementById('formError');
+let teamModal;
+document.addEventListener('DOMContentLoaded', () => {
+    teamModal = new bootstrap.Modal(document.getElementById('teamModal'));
+});
+
+function openTeamModal(btn) {
+    document.getElementById('teamError').classList.add('d-none');
+    if (btn) {
+        document.getElementById('teamModalTitle').textContent = 'Edit Team';
+        document.getElementById('teamId').value = btn.dataset.id;
+        document.getElementById('teamName').value = btn.dataset.name || '';
+        document.getElementById('teamStadium').value = btn.dataset.stadium || '';
+        document.getElementById('teamUsername').value = btn.dataset.username || '';
+        document.getElementById('teamLogo').value = btn.dataset.logo || '';
+        document.getElementById('teamPassword').value = '';
+        document.getElementById('teamPassword').placeholder = 'Leave blank to keep current password';
+    } else {
+        document.getElementById('teamModalTitle').textContent = 'Add Team';
+        document.getElementById('teamId').value = '';
+        document.getElementById('teamName').value = '';
+        document.getElementById('teamStadium').value = '';
+        document.getElementById('teamUsername').value = '';
+        document.getElementById('teamLogo').value = '';
+        document.getElementById('teamPassword').value = 'password';
+        document.getElementById('teamPassword').placeholder = 'Required';
+    }
+    teamModal.show();
+}
+
+async function saveTeam() {
+    const err = document.getElementById('teamError');
     err.classList.add('d-none');
+    const id = document.getElementById('teamId').value;
+    const body = {
+        name: document.getElementById('teamName').value.trim(),
+        stadium: document.getElementById('teamStadium').value.trim() || null,
+        username: document.getElementById('teamUsername').value.trim(),
+        logo: document.getElementById('teamLogo').value.trim() || null,
+        password: document.getElementById('teamPassword').value
+    };
     try {
-        await apiCall('POST', '/api/teams', {
-            name: document.getElementById('name').value,
-            stadium: document.getElementById('stadium').value || null,
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value,
-            logo: document.getElementById('logo').value || null
-        });
-        showToast('Team created');
-        setTimeout(() => location.reload(), 700);
+        if (id) {
+            if (!body.password) body.password = '';
+            await apiCall('PUT', `/api/teams/${id}`, body);
+            showToast('Team updated');
+        } else {
+            if (!body.password) throw new Error('Password is required for a new team');
+            await apiCall('POST', '/api/teams', body);
+            showToast('Team created');
+        }
+        setTimeout(() => location.reload(), 600);
     } catch (ex) {
         err.textContent = ex.message;
         err.classList.remove('d-none');
     }
-});
+}
 </script>
 </body>
 </html>

@@ -11,6 +11,6 @@ public class TeamRequest {
     private String stadium;
     @NotBlank
     private String username;
-    @NotBlank
+    /** Required on create; optional on update (leave blank to keep current password). */
     private String password;
 }

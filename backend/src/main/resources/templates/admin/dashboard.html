@@ -79,16 +79,26 @@
                     </div>
                 </div>
             </div>
-            <div class="panel">
+            <div class="panel mb-4">
                 <div class="panel-header">Pending Approvals</div>
                 <div class="panel-body p-3">
                     <div th:if="${pendingReports.isEmpty()}" class="text-muted text-center">No pending reports</div>
                     <a th:each="r : ${pendingReports}" class="d-block mb-2 text-decoration-none"
                        th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">
                         Fixture #<span th:text="${r.fixtureId}"></span>
-                        â€” <span th:text="${r.playerName}"></span>
+                        — <span th:text="${r.playerName}"></span>
                     </a>
                     <a href="/admin/reports" class="btn btn-sm btn-ferwafa mt-2">Review Results</a>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">Edit anything</div>
+                <div class="p-3 d-flex flex-wrap gap-2">
+                    <a href="/admin/teams" class="btn btn-sm btn-ferwafa">Teams</a>
+                    <a href="/admin/referees" class="btn btn-sm btn-outline-primary">Referees</a>
+                    <a href="/admin/fixtures" class="btn btn-sm btn-outline-primary">Fixtures</a>
+                    <a href="/admin/transfers" class="btn btn-sm btn-outline-primary">Transfers</a>
+                    <a href="/admin/reports" class="btn btn-sm btn-outline-primary">Reports</a>
                 </div>
             </div>
         </div>
