@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Admin Dashboard')}"></head>
 <body class="app-body">
@@ -49,7 +49,7 @@
                 <div class="panel-body">
                     <div th:if="${upcomingFixtures.isEmpty()}" class="p-4 text-muted text-center">No upcoming fixtures</div>
                     <div class="fixture-row" th:each="f, iter : ${upcomingFixtures}" th:if="${iter.index &lt; 6}">
-                        <img class="team-crest" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.svg'}" th:alt="${f.homeTeamName}">
+                        <img class="team-crest" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.png'}" th:alt="${f.homeTeamName}">
                         <div class="flex-grow-1">
                             <div class="fw-semibold" th:text="${f.homeTeamName}">Home</div>
                         </div>
@@ -60,7 +60,7 @@
                         <div class="flex-grow-1 text-end">
                             <div class="fw-semibold" th:text="${f.awayTeamName}">Away</div>
                         </div>
-                        <img class="team-crest" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.svg'}" th:alt="${f.awayTeamName}">
+                        <img class="team-crest" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.png'}" th:alt="${f.awayTeamName}">
                     </div>
                 </div>
             </div>
@@ -71,10 +71,10 @@
                 <div class="panel-body">
                     <div th:if="${activeSuspensions.isEmpty()}" class="p-4 text-muted text-center">No active suspensions</div>
                     <div class="member-row suspended-player" th:each="s : ${activeSuspensions}">
-                        <img class="team-crest sm" th:src="${s.teamLogo != null ? s.teamLogo : '/img/ferwafa-logo.svg'}" alt="">
+                        <img class="team-crest sm" th:src="${s.teamLogo != null ? s.teamLogo : '/img/ferwafa-logo.png'}" alt="">
                         <div>
                             <div class="fw-semibold" th:text="${s.player}">Player</div>
-                            <div class="small" th:text="${s.team + ' · ' + s.suspension}">Team</div>
+                            <div class="small" th:text="${s.team + ' Â· ' + s.suspension}">Team</div>
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                     <a th:each="r : ${pendingReports}" class="d-block mb-2 text-decoration-none"
                        th:href="@{/admin/reports/match/{id}(id=${r.fixtureId})}">
                         Fixture #<span th:text="${r.fixtureId}"></span>
-                        — <span th:text="${r.playerName}"></span>
+                        â€” <span th:text="${r.playerName}"></span>
                     </a>
                     <a href="/admin/reports" class="btn btn-sm btn-ferwafa mt-2">Review Results</a>
                 </div>

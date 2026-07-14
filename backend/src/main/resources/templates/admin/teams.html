@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Teams')}"></head>
 <body class="app-body">
@@ -12,7 +12,7 @@
                 <div class="panel-header">All Teams</div>
                 <div class="panel-body">
                     <div class="team-row" th:each="t : ${teams}">
-                        <img class="team-crest" th:src="${t.logo != null ? t.logo : '/img/ferwafa-logo.svg'}" th:alt="${t.name}">
+                        <img class="team-crest" th:src="${t.logo != null ? t.logo : '/img/ferwafa-logo.png'}" th:alt="${t.name}">
                         <div>
                             <div class="fw-bold" th:text="${t.name}">Team</div>
                             <div class="small text-muted" th:text="${t.stadium}">Stadium</div>
@@ -44,7 +44,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Logo URL (optional)</label>
-                            <input class="form-control" id="logo" placeholder="/img/teams/apr.svg">
+                            <input class="form-control" id="logo" placeholder="/img/teams/apr.png">
                         </div>
                         <div id="formError" class="alert alert-danger d-none"></div>
                         <button type="submit" class="btn btn-teal">ADD TEAM</button>
