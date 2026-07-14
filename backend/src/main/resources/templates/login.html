@@ -13,49 +13,65 @@
     <div class="row justify-content-center align-items-center min-vh-100">
         <div class="col-md-5">
             <div class="card shadow-lg border-0">
-                <div class="card-body p-5">
+                <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
                         <img th:src="@{/img/ferwafa-logo.png}" alt="FERWAFA" class="login-logo mb-3">
                         <h2 class="text-success fw-bold mb-1">FERWAFA</h2>
                         <p class="text-muted mb-0">Match Day &amp; Transfer Management</p>
                     </div>
-                    <div class="d-grid gap-2 mb-3">
-                        <a class="btn btn-outline-primary" href="/referee/">Open Referee App</a>
-                    </div>
-                    <p class="text-center small text-muted mb-3">Admin &amp; team managers use the form below</p>
-                    <ul class="nav nav-pills nav-fill mb-4" role="tablist">
-                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="pill" href="#admin-login">Admin</a></li>
-                        <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#team-login">Team Manager</a></li>
+
+                    <div class="alert alert-danger d-none" id="loginGlobalError"></div>
+
+                    <ul class="nav nav-pills nav-fill mb-4" id="loginTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="admin-tab" data-bs-toggle="pill"
+                                    data-bs-target="#admin-login" type="button" role="tab">Admin</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="team-tab" data-bs-toggle="pill"
+                                    data-bs-target="#team-login" type="button" role="tab">Team Manager</button>
+                        </li>
                     </ul>
+
                     <div class="tab-content">
-                        <div class="tab-pane fade show active" id="admin-login">
-                            <form id="adminLoginForm">
+                        <div class="tab-pane fade show active" id="admin-login" role="tabpanel">
+                            <form id="adminLoginForm" autocomplete="on">
                                 <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="adminUsername" value="admin" required>
+                                    <label class="form-label" for="adminUsername">Username</label>
+                                    <input type="text" class="form-control" id="adminUsername"
+                                           name="adminUsername" value="admin" required autocomplete="username">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="adminPassword" value="password" required>
+                                    <label class="form-label" for="adminPassword">Password</label>
+                                    <input type="password" class="form-control" id="adminPassword"
+                                           name="adminPassword" value="password" required autocomplete="current-password">
                                 </div>
                                 <div id="adminError" class="alert alert-danger d-none"></div>
                                 <button type="submit" class="btn btn-success w-100">Login as Admin</button>
                             </form>
                         </div>
-                        <div class="tab-pane fade" id="team-login">
-                            <form id="teamLoginForm">
+                        <div class="tab-pane fade" id="team-login" role="tabpanel">
+                            <form id="teamLoginForm" autocomplete="on">
                                 <div class="mb-3">
-                                    <label class="form-label">Team Username</label>
-                                    <input type="text" class="form-control" id="teamUsername" placeholder="e.g. apr" required>
+                                    <label class="form-label" for="teamUsername">Team Username</label>
+                                    <input type="text" class="form-control" id="teamUsername"
+                                           name="teamUsername" placeholder="e.g. apr" required autocomplete="username">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="teamPassword" value="password" required>
+                                    <label class="form-label" for="teamPassword">Password</label>
+                                    <input type="password" class="form-control" id="teamPassword"
+                                           name="teamPassword" value="password" required autocomplete="current-password">
                                 </div>
                                 <div id="teamError" class="alert alert-danger d-none"></div>
                                 <button type="submit" class="btn btn-primary w-100">Login as Team</button>
                             </form>
                         </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="small text-muted mb-2">Referees use the mobile web app</p>
+                        <a class="btn btn-outline-primary btn-sm" href="/referee/">Open Referee App</a>
                     </div>
                 </div>
             </div>
