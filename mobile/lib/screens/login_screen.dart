@@ -26,10 +26,15 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              const Icon(Icons.sports_soccer, size: 64, color: Color(0xFF006633)),
+              Center(
+                child: Image.asset('assets/images/ferwafa-logo.png', width: 96, height: 96),
+              ),
               const SizedBox(height: 16),
               const Text('FERWAFA Referee', textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF006633))),
+              const SizedBox(height: 8),
+              const Text('Sign in with your email and access code',
+                  textAlign: TextAlign.center, style: TextStyle(color: Colors.black54)),
               const SizedBox(height: 32),
               TextField(
                 controller: _emailController,

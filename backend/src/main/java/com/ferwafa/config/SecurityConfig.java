@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/api/reports/top-scorers", "/api/reports/cards-leaderboard",
                                 "/api/transfer-windows", "/api/transfer-windows/open").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/login", "/team/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -102,7 +102,8 @@ public class SecurityConfig {
                 "https://127.0.0.1:*",
                 "https://*.onrender.com",
                 "https://*.up.railway.app",
-                "https://*.loca.lt"
+                "https://*.loca.lt",
+                "https://*.trycloudflare.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));

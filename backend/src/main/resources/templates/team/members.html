@@ -1,39 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Squad')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: team-nav}"></nav>
-<main class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 th:text="${team.name} + ' — Squad'">Squad</h2>
-        <a href="/team/members/new" class="btn btn-primary">Register Member</a>
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: team-sidebar('members')}"></aside>
+<header th:replace="~{fragments/layout :: team-topbar}"></header>
+<main class="app-main">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="mb-1" th:text="${team.name} + ' — Members'">Members</h2>
+            <p class="text-muted mb-0">Suspended players are highlighted in red and cannot be selected in the next lineup.</p>
+        </div>
+        <a href="/team/members/new" class="btn btn-teal">Add Member</a>
     </div>
-    <div class="card table-responsive">
-        <table class="table table-striped mb-0">
-            <thead>
-            <tr><th>#</th><th>Name</th><th>Role</th><th>Position</th><th>Post</th><th></th></tr>
-            </thead>
-            <tbody>
-            <tr th:each="m : ${members}">
-                <td th:text="${m.number}"></td>
-                <td th:text="${m.fname + ' ' + m.lname}"></td>
-                <td th:text="${m.roleInTeam}"></td>
-                <td th:text="${m.position}"></td>
-                <td th:text="${m.post}"></td>
-                <td>
-                    <button class="btn btn-sm btn-outline-danger"
-                            th:onclick="'deleteMember(' + ${m.memberId} + ')'">Delete</button>
-                </td>
-            </tr>
-            <tr th:if="${members.isEmpty()}">
-                <td colspan="6" class="text-center text-muted py-4">No members yet</td>
-            </tr>
-            </tbody>
-        </table>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="panel">
+                <div class="panel-header">Players</div>
+                <div class="panel-body">
+                    <div th:each="m : ${members}" th:if="${m.roleInTeam.name() == 'PLAYER'}"
+                         class="member-row" th:classappend="${suspendedIds.contains(m.memberId)} ? ' suspended-player' : ''">
+                        <span class="jersey" th:text="${m.number != null ? m.number : '—'}">1</span>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${m.fname + ' ' + m.lname}">Name</div>
+                            <div class="small text-muted" th:text="${m.position}">Position</div>
+                        </div>
+                        <span th:if="${suspendedIds.contains(m.memberId)}" class="badge badge-suspend">Suspend</span>
+                        <span th:unless="${suspendedIds.contains(m.memberId)}" class="badge badge-allowed">Allowed</span>
+                        <button class="btn btn-sm btn-outline-danger"
+                                th:onclick="'deleteMember(' + ${m.memberId} + ')'">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel">
+                <div class="panel-header">Technical Staff</div>
+                <div class="panel-body">
+                    <div th:each="m : ${members}" th:if="${m.roleInTeam.name() != 'PLAYER'}" class="member-row">
+                        <span class="jersey" th:text="${m.post != null ? m.post : 'ST'}">HC</span>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${m.fname + ' ' + m.lname}">Name</div>
+                            <div class="small text-muted" th:text="${m.roleInTeam}">Role</div>
+                        </div>
+                        <span class="badge badge-allowed">Allowed</span>
+                        <button class="btn btn-sm btn-outline-danger"
+                                th:onclick="'deleteMember(' + ${m.memberId} + ')'">Delete</button>
+                    </div>
+                    <div th:if="${#lists.isEmpty(members)}" class="p-4 text-center text-muted">No members yet</div>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 <script th:replace="~{fragments/layout :: scripts}"></script>
-<script>
+<script th:inline="javascript">
+    const teamName = /*[[${team.name}]]*/ 'Team';
+    const teamLogo = /*[[${team.logo}]]*/ null;
+    document.getElementById('teamTopName').textContent = teamName;
+    if (teamLogo) document.getElementById('teamTopLogo').src = teamLogo;
+
 async function deleteMember(id) {
     if (!confirm('Delete this member?')) return;
     try {

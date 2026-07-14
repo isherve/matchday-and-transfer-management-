@@ -65,6 +65,21 @@ public class ReportExportService {
             row.put("minute", d.getCardMin());
             row.put("suspension", d.getSuspensionReason() != null ? d.getSuspensionReason().name() : "N/A");
             row.put("served", d.getSuspensionServed());
+            row.put("missingGames", d.getSuspensionReason() != null && !Boolean.TRUE.equals(d.getSuspensionServed()) ? 1 : 0);
+            row.put("punishedDate", d.getCreatedAt() != null ? d.getCreatedAt().toLocalDate().toString() : "");
+            return row;
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getActiveSuspensionsReport() {
+        return suspensionService.getActiveSuspensions().stream().map(d -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("player", d.getTeamMember().getFname() + " " + d.getTeamMember().getLname());
+            row.put("team", d.getTeamMember().getTeam().getName());
+            row.put("teamLogo", d.getTeamMember().getTeam().getLogo());
+            row.put("suspension", d.getSuspensionReason() != null ? d.getSuspensionReason().name() : "N/A");
+            row.put("position", d.getTeamMember().getPosition() != null ? d.getTeamMember().getPosition() : "");
             return row;
         }).collect(Collectors.toList());
     }
@@ -153,18 +168,42 @@ public class ReportExportService {
             PdfWriter.getInstance(document, baos);
             document.open();
 
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Font orgFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Font contactFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
 
+            try {
+                var logoStream = getClass().getResourceAsStream("/static/img/ferwafa-logo.png");
+                if (logoStream != null) {
+                    com.lowagie.text.Image logo = com.lowagie.text.Image.getInstance(logoStream.readAllBytes());
+                    logo.scaleToFit(48, 48);
+                    logo.setAlignment(Element.ALIGN_LEFT);
+                    document.add(logo);
+                }
+            } catch (Exception ignored) {
+                // logo optional
+            }
+
+            Paragraph org = new Paragraph("Fédération Rwandaise de Football Association", orgFont);
+            org.setSpacingBefore(4);
+            document.add(org);
+            Paragraph contact = new Paragraph(
+                    "Phone: +250 788 608 988  |  P.O BOX: 2000 Kigali – Rwanda  |  Email: ferwafa@yahoo.fr",
+                    contactFont);
+            contact.setSpacingAfter(8);
+            document.add(contact);
+
             Paragraph titlePara = new Paragraph(title, titleFont);
             titlePara.setAlignment(Element.ALIGN_CENTER);
-            titlePara.setSpacingAfter(20);
+            titlePara.setSpacingAfter(8);
             document.add(titlePara);
 
-            Paragraph datePara = new Paragraph("Generated: " +
-                    java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), cellFont);
-            datePara.setSpacingAfter(15);
+            Paragraph datePara = new Paragraph("Generated on: " +
+                    java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM d, yyyy")), cellFont);
+            datePara.setAlignment(Element.ALIGN_RIGHT);
+            datePara.setSpacingAfter(12);
             document.add(datePara);
 
             PdfPTable table = new PdfPTable(headers.size());
@@ -172,14 +211,24 @@ public class ReportExportService {
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setBackgroundColor(new java.awt.Color(0, 102, 51));
+                cell.setBackgroundColor(new java.awt.Color(0, 51, 102));
+                cell.setPadding(5);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setPhrase(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE)));
                 table.addCell(cell);
             }
 
+            boolean alt = false;
             for (List<String> row : rows) {
                 for (String value : row) {
-                    table.addCell(new Phrase(value != null ? value : "", cellFont));
+                    PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", cellFont));
+                    if (alt) {
+                        cell.setBackgroundColor(new java.awt.Color(232, 240, 254));
+                    }
+                    cell.setPadding(4);
+                    table.addCell(cell);
                 }
+                alt = !alt;
             }
 
             document.add(table);

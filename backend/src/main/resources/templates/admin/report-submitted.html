@@ -1,12 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Submitted Reports')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('results')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 th:text="${title}">Submitted Match Reports</h2>
-        <a href="/admin/reports" class="btn btn-outline-secondary btn-sm">← Approvals</a>
+        <a href="/admin/reports" class="btn btn-outline-secondary btn-sm">â† Approvals</a>
     </div>
 
     <div th:if="${pendingReports.isEmpty()}" class="alert alert-info">No submitted reports waiting for approval.</div>
@@ -35,15 +36,15 @@
                     <td th:text="${'#' + r.fixtureId}"></td>
                     <td th:text="${r.matchLabel}"></td>
                     <td>
-                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + '–' + r.awayScore}">0–0</span>
-                        <span th:unless="${r.homeScore != null}">—</span>
+                        <span th:if="${r.homeScore != null}" th:text="${r.homeScore + 'â€“' + r.awayScore}">0â€“0</span>
+                        <span th:unless="${r.homeScore != null}">â€”</span>
                     </td>
                     <td th:text="${r.playerName}"></td>
                     <td th:text="${r.teamName}"></td>
                     <td th:text="${r.goal}"></td>
                     <td>
                         <span th:class="${r.card.name() == 'RED' ? 'badge text-bg-danger' : (r.card.name() == 'YELLOW' ? 'badge text-bg-warning' : 'text-muted')}"
-                              th:text="${r.card.name() == 'NONE' ? '—' : r.card}"></span>
+                              th:text="${r.card.name() == 'NONE' ? 'â€”' : r.card}"></span>
                     </td>
                     <td th:text="${r.refereeName}"></td>
                     <td><span class="badge text-bg-warning text-dark">SUBMITTED</span></td>
@@ -72,3 +73,4 @@ async function approve(id) {
 </script>
 </body>
 </html>
+

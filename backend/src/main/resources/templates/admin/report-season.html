@@ -1,12 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Season Record')}"></head>
-<body>
-<nav th:replace="~{fragments/layout :: admin-nav}"></nav>
-<main class="container py-4">
+<body class="app-body">
+<aside th:replace="~{fragments/layout :: admin-sidebar('season')}"></aside>
+<header th:replace="~{fragments/layout :: admin-topbar}"></header>
+<main class="app-main">
     <div class="d-flex justify-content-between mb-4">
         <h2>Season Record <small class="text-muted" th:text="${season}"></small></h2>
-        <a class="btn btn-outline-success btn-sm" th:href="@{/api/reports/standings/pdf(season=${season})}" target="_blank">PDF</a>
+        <a class="btn btn-teal btn-sm" th:href="@{/api/reports/standings/pdf(season=${season})}" target="_blank">Export to PDF</a>
     </div>
     <div class="card table-responsive mb-4">
         <table class="table table-striped mb-0">
@@ -56,3 +57,4 @@
 <script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>
+

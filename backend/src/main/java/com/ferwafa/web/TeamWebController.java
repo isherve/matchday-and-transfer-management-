@@ -44,6 +44,7 @@ public class TeamWebController {
         Long teamId = securityUtils.currentEntityId();
         model.addAttribute("team", teamService.findById(teamId));
         model.addAttribute("members", memberService.findByTeam(teamId));
+        model.addAttribute("suspendedIds", suspensionService.getActiveSuspendedMemberIds(teamId));
         return "team/members";
     }
 

@@ -213,6 +213,22 @@ public class SuspensionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<DisciplinaryRecord> getActiveSuspensions() {
+        return disciplinaryRecordRepository.findAll().stream()
+                .filter(r -> r.getSuspensionReason() != null && !Boolean.TRUE.equals(r.getSuspensionServed()))
+                .sorted(Comparator.comparing(DisciplinaryRecord::getWeek).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Set<Long> getActiveSuspendedMemberIds(Long teamId) {
+        return disciplinaryRecordRepository.findByTeamId(teamId).stream()
+                .filter(r -> r.getSuspensionReason() != null && !Boolean.TRUE.equals(r.getSuspensionServed()))
+                .map(r -> r.getTeamMember().getMemberId())
+                .collect(Collectors.toSet());
+    }
+
     private String formatReason(SuspensionReason reason) {
         return switch (reason) {
             case RED_CARD -> "Direct red card - suspended for next match";
