@@ -157,11 +157,24 @@ public class V2__seed extends BaseJavaMigration {
     private void insertFixtures(Connection conn, int[][] pairs, int week, String season, String status, int refereeId) throws Exception {
         LocalDate base = LocalDate.of(2025, 9, 1).plusWeeks(week - 1L);
         for (int i = 0; i < pairs.length; i++) {
+            String stadium = homeStadium(conn, pairs[i][0]);
             exec(conn, """
                 INSERT INTO fixture (home_team_id, away_team_id, week, stadium, match_date, match_time, season, status, referee_id, created_at, updated_at)
-                VALUES (?, ?, ?, 'Kigali Stadium', ?, '15:00:00', ?, ?, ?, NOW(), NOW())
-                """, pairs[i][0], pairs[i][1], week, base.plusDays(i * 2L).toString(), season, status, refereeId);
+                VALUES (?, ?, ?, ?, ?, '15:00:00', ?, ?, ?, NOW(), NOW())
+                """, pairs[i][0], pairs[i][1], week, stadium, base.plusDays(i * 2L).toString(), season, status, refereeId);
         }
+    }
+
+    private String homeStadium(Connection conn, int homeTeamId) throws Exception {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT stadium FROM team WHERE team_id = ?")) {
+            ps.setInt(1, homeTeamId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String s = rs.getString(1);
+                if (s != null && !s.isBlank()) return s;
+            }
+        }
+        return "Kigali Stadium";
     }
 
     private long memberId(Connection conn, int teamId, int number) throws Exception {

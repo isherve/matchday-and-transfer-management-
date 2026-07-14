@@ -49,6 +49,7 @@ public class AdminWebController {
     public String referees(Model model) {
         model.addAttribute("referees", refereeService.findAll());
         model.addAttribute("fixtures", fixtureService.findAll());
+        model.addAttribute("teams", teamService.findAll());
         return "admin/referees";
     }
 
