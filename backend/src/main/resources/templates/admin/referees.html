@@ -6,7 +6,7 @@
 <header th:replace="~{fragments/layout :: admin-topbar}"></header>
 <main class="app-main">
     <h2 class="mb-2">Assign Referees</h2>
-    <p class="text-muted mb-4">Select a referee for each scheduled match.</p>
+    <p class="text-muted mb-4">Select officials, set venue, and edit fixture details.</p>
 
     <div class="panel mb-4">
         <div class="panel-header">Registered Referees</div>
@@ -26,13 +26,20 @@
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
                 <thead>
-                <tr><th>Week</th><th>Match</th><th>Date</th><th>Assign referee</th></tr>
+                <tr>
+                    <th>Week</th>
+                    <th>Match</th>
+                    <th>Date</th>
+                    <th>Venue / Stadium</th>
+                    <th>Assign referee</th>
+                    <th></th>
+                </tr>
                 </thead>
                 <tbody>
                 <tr th:each="f : ${fixtures}">
                     <td th:text="${f.week}"></td>
                     <td>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <img class="team-crest sm" th:src="${f.homeTeamLogo != null ? f.homeTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                             <span th:text="${f.homeTeamName}"></span>
                             <span class="text-muted">vs</span>
@@ -40,15 +47,35 @@
                             <img class="team-crest sm" th:src="${f.awayTeamLogo != null ? f.awayTeamLogo : '/img/ferwafa-logo.png'}" alt="">
                         </div>
                     </td>
-                    <td th:text="${f.matchDate}"></td>
                     <td>
-                        <span th:if="${f.refereeName != null}" class="badge text-bg-success" th:text="${f.refereeName}"></span>
-                        <select th:unless="${f.refereeName != null}" class="form-select form-select-sm"
+                        <div th:text="${f.matchDate}"></div>
+                        <div class="small text-muted" th:text="${f.matchTime}"></div>
+                    </td>
+                    <td>
+                        <span th:if="${f.stadium != null and !f.stadium.isEmpty()}" th:text="${f.stadium}"></span>
+                        <span th:unless="${f.stadium != null and !f.stadium.isEmpty()}" class="text-muted">Not set</span>
+                    </td>
+                    <td style="min-width: 180px;">
+                        <select class="form-select form-select-sm"
                                 th:onchange="'assignRef(' + ${f.id} + ', this.value)'">
-                            <option value="">Select refereeâ€¦</option>
+                            <option value="">Select referee…</option>
                             <option th:each="r : ${referees}" th:value="${r.refereeId}"
-                                    th:text="${r.fname + ' ' + r.lname}"></option>
+                                    th:text="${r.fname + ' ' + r.lname}"
+                                    th:selected="${f.refereeId != null and f.refereeId == r.refereeId}"></option>
                         </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                th:attr="data-id=${f.id},
+                                         data-home=${f.homeTeamId},
+                                         data-away=${f.awayTeamId},
+                                         data-week=${f.week},
+                                         data-stadium=${f.stadium},
+                                         data-date=${f.matchDate},
+                                         data-time=${f.matchTime},
+                                         data-season=${f.season},
+                                         data-ref=${f.refereeId}"
+                                onclick="openEditModal(this)">Edit</button>
                     </td>
                 </tr>
                 </tbody>
@@ -56,8 +83,91 @@
         </div>
     </div>
 </main>
+
+<!-- Edit fixture modal -->
+<div class="modal fade" id="editFixtureModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit fixture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Home team</label>
+                        <select class="form-select" id="editHomeTeamId">
+                            <option th:each="t : ${teams}" th:value="${t.teamId}" th:text="${t.name}"
+                                    th:attr="data-stadium=${t.stadium}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Away team</label>
+                        <select class="form-select" id="editAwayTeamId">
+                            <option th:each="t : ${teams}" th:value="${t.teamId}" th:text="${t.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Week</label>
+                        <input type="number" class="form-control" id="editWeek" min="1">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-control" id="editMatchDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Time</label>
+                        <input type="time" class="form-control" id="editMatchTime">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Season</label>
+                        <input class="form-control" id="editSeason">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Venue / Stadium</label>
+                        <input class="form-control" id="editStadium" list="stadiumSuggestions" placeholder="e.g. Amahoro Stadium">
+                        <datalist id="stadiumSuggestions">
+                            <option th:each="t : ${teams}" th:if="${t.stadium != null}" th:value="${t.stadium}"></option>
+                            <option value="Kigali Stadium"></option>
+                            <option value="Amahoro Stadium"></option>
+                            <option value="Huye Stadium"></option>
+                            <option value="Nyamirambo Stadium"></option>
+                            <option value="Bugesera Stadium"></option>
+                            <option value="Police Stadium"></option>
+                            <option value="Rubavu Stadium"></option>
+                        </datalist>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Referee</label>
+                        <select class="form-select" id="editRefereeId">
+                            <option value="">Unassigned</option>
+                            <option th:each="r : ${referees}" th:value="${r.refereeId}"
+                                    th:text="${r.fname + ' ' + r.lname}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div id="editError" class="alert alert-danger d-none mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-ferwafa" onclick="saveFixtureEdit()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:replace="~{fragments/layout :: scripts}"></script>
 <script>
+let editModal;
+document.addEventListener('DOMContentLoaded', () => {
+    editModal = new bootstrap.Modal(document.getElementById('editFixtureModal'));
+    document.getElementById('editHomeTeamId').addEventListener('change', (e) => {
+        const stadium = e.target.selectedOptions[0]?.dataset?.stadium;
+        if (stadium) document.getElementById('editStadium').value = stadium;
+    });
+});
+
 async function assignRef(fixtureId, refereeId) {
     if (!refereeId) return;
     try {
@@ -65,6 +175,49 @@ async function assignRef(fixtureId, refereeId) {
         showToast('Referee assigned');
         setTimeout(() => location.reload(), 600);
     } catch (e) { showToast(e.message, 'danger'); }
+}
+
+function openEditModal(btn) {
+    document.getElementById('editId').value = btn.dataset.id;
+    document.getElementById('editHomeTeamId').value = btn.dataset.home;
+    document.getElementById('editAwayTeamId').value = btn.dataset.away;
+    document.getElementById('editWeek').value = btn.dataset.week;
+    document.getElementById('editStadium').value = btn.dataset.stadium || '';
+    document.getElementById('editMatchDate').value = btn.dataset.date;
+    let t = btn.dataset.time || '15:00:00';
+    if (t.length > 5) t = t.substring(0, 5);
+    document.getElementById('editMatchTime').value = t;
+    document.getElementById('editSeason').value = btn.dataset.season || '2025/26';
+    document.getElementById('editRefereeId').value = btn.dataset.ref || '';
+    document.getElementById('editError').classList.add('d-none');
+    editModal.show();
+}
+
+async function saveFixtureEdit() {
+    const err = document.getElementById('editError');
+    err.classList.add('d-none');
+    const id = document.getElementById('editId').value;
+    const timeVal = document.getElementById('editMatchTime').value;
+    try {
+        await apiCall('PUT', `/api/fixtures/${id}`, {
+            homeTeamId: parseInt(document.getElementById('editHomeTeamId').value),
+            awayTeamId: parseInt(document.getElementById('editAwayTeamId').value),
+            week: parseInt(document.getElementById('editWeek').value),
+            stadium: document.getElementById('editStadium').value || null,
+            matchDate: document.getElementById('editMatchDate').value,
+            matchTime: timeVal.length === 5 ? timeVal + ':00' : timeVal,
+            season: document.getElementById('editSeason').value
+        });
+        const refId = document.getElementById('editRefereeId').value;
+        if (refId) {
+            await apiCall('PUT', `/api/fixtures/${id}/assign-referee`, { refereeId: parseInt(refId) });
+        }
+        showToast('Fixture updated');
+        setTimeout(() => location.reload(), 600);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
 }
 </script>
 </body>
