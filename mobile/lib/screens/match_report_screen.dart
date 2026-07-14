@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/fixture_model.dart';
 import '../services/auth_service.dart';
@@ -114,7 +114,7 @@ class _MatchReportScreenState extends State<MatchReportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Week ${widget.fixture.week} Report'),
-        backgroundColor: const Color(0xFF006633),
+        backgroundColor: const Color(0xFF133E8D),
         foregroundColor: Colors.white,
       ),
       body: _loading
@@ -139,7 +139,7 @@ class _MatchReportScreenState extends State<MatchReportScreen> {
                   child: FilledButton(
                     onPressed: _submitting || !widget.fixture.canSubmitReport ? null : _submit,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF006633),
+                      backgroundColor: const Color(0xFF133E8D),
                       minimumSize: const Size(double.infinity, 48),
                     ),
                     child: _submitting

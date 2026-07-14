@@ -18,7 +18,7 @@ class FerwafaApp extends StatelessWidget {
         title: 'FERWAFA Referee',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF006633)),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF133E8D)),
           useMaterial3: true,
         ),
         home: const SplashScreen(),
