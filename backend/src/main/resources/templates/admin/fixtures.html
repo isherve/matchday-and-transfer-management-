@@ -182,10 +182,27 @@
                                     th:text="${r.fname + ' ' + r.lname}"></option>
                         </select>
                     </div>
+                    <div class="col-12">
+                        <hr>
+                        <h6 class="text-muted">Postpone (optional)</h6>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">New date</label>
+                        <input type="date" class="form-control" id="postponeDate">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">New time</label>
+                        <input type="time" class="form-control" id="postponeTime">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reason</label>
+                        <input class="form-control" id="postponeReason" placeholder="Weather, security…">
+                    </div>
                 </div>
                 <div id="editError" class="alert alert-danger d-none mt-3"></div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-outline-warning me-auto" onclick="postponeFixture()">Postpone</button>
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-ferwafa" onclick="saveFixtureEdit()">Save changes</button>
             </div>
@@ -281,6 +298,33 @@ async function saveFixtureEdit() {
             await apiCall('PUT', `/api/fixtures/${id}/assign-referee`, { refereeId: parseInt(refId) });
         }
         showToast('Fixture updated');
+        setTimeout(() => location.reload(), 600);
+    } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+    }
+}
+
+async function postponeFixture() {
+    const err = document.getElementById('editError');
+    err.classList.add('d-none');
+    const id = document.getElementById('editId').value;
+    const newDate = document.getElementById('postponeDate').value;
+    const reason = document.getElementById('postponeReason').value.trim();
+    if (!newDate || !reason) {
+        err.textContent = 'Postpone needs a new date and reason';
+        err.classList.remove('d-none');
+        return;
+    }
+    let newTime = document.getElementById('postponeTime').value;
+    if (newTime && newTime.length === 5) newTime = newTime + ':00';
+    try {
+        await apiCall('PUT', `/api/fixtures/${id}/postpone`, {
+            newMatchDate: newDate,
+            newMatchTime: newTime || null,
+            reason
+        });
+        showToast('Fixture postponed');
         setTimeout(() => location.reload(), 600);
     } catch (ex) {
         err.textContent = ex.message;

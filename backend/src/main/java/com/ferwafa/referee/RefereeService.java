@@ -26,6 +26,9 @@ public class RefereeService {
 
     @Transactional
     public RefereeResponse create(RefereeRequest request) {
+        if (request.getAccessCode() == null || request.getAccessCode().isBlank()) {
+            throw new BusinessException("Access code is required");
+        }
         if (refereeRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new BusinessException("Email already registered");
         }

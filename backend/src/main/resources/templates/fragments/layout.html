@@ -44,8 +44,11 @@
         <a class="nav-link" th:classappend="${active == 'punishments'} ? ' active'" href="/admin/reports/punishments">
             <i class="bi bi-exclamation-octagon nav-icon"></i> Punishments
         </a>
-        <a class="nav-link" th:classappend="${active == 'transfers'} ? ' active'" href="/admin/reports/transfers">
+        <a class="nav-link" th:classappend="${active == 'transfers'} ? ' active'" href="/admin/transfers">
             <i class="bi bi-arrow-left-right nav-icon"></i> Transfers
+        </a>
+        <a class="nav-link" href="/admin/reports/transfers">
+            <i class="bi bi-file-earmark-text nav-icon"></i> Transfer Report
         </a>
     </nav>
 </aside>
