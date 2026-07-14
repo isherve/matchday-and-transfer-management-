@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/fixture_model.dart';
 import '../services/auth_service.dart';
@@ -43,7 +43,7 @@ class _FixturesScreenState extends State<FixturesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Assigned Matches'),
-        backgroundColor: const Color(0xFF006633),
+        backgroundColor: const Color(0xFF133E8D),
         foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
@@ -70,11 +70,11 @@ class _FixturesScreenState extends State<FixturesScreen> {
                           return Card(
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: const Color(0xFF006633),
+                                backgroundColor: const Color(0xFF133E8D),
                                 child: Text('${f.week}', style: const TextStyle(color: Colors.white)),
                               ),
                               title: Text(f.title),
-                              subtitle: Text('${f.matchDate} ${f.matchTime}\n${f.stadium} • ${f.status}'),
+                              subtitle: Text('${f.matchDate} ${f.matchTime}\n${f.stadium} â€¢ ${f.status}'),
                               isThreeLine: true,
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => Navigator.push(context,

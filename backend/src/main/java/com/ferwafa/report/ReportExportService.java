@@ -211,7 +211,7 @@ public class ReportExportService {
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setBackgroundColor(new java.awt.Color(0, 51, 102));
+                cell.setBackgroundColor(new java.awt.Color(19, 62, 141));
                 cell.setPadding(5);
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
                 cell.setPhrase(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, java.awt.Color.WHITE)));
@@ -223,7 +223,7 @@ public class ReportExportService {
                 for (String value : row) {
                     PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", cellFont));
                     if (alt) {
-                        cell.setBackgroundColor(new java.awt.Color(232, 240, 254));
+                        cell.setBackgroundColor(new java.awt.Color(232, 238, 248));
                     }
                     cell.setPadding(4);
                     table.addCell(cell);

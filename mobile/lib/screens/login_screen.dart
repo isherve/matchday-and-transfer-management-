@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import 'fixtures_screen.dart';
@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
               const Text('FERWAFA Referee', textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF006633))),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF133E8D))),
               const SizedBox(height: 8),
               const Text('Sign in with your email and access code',
                   textAlign: TextAlign.center, style: TextStyle(color: Colors.black54)),
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     setState(() => _error = e.toString());
                   }
                 },
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF006633), padding: const EdgeInsets.all(16)),
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF133E8D), padding: const EdgeInsets.all(16)),
                 child: auth.loading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Text('Login'),
