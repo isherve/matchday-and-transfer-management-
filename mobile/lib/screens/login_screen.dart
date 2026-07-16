@@ -18,6 +18,12 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _error;
   bool _obscure = true;
 
+  static const _demos = [
+    ('Jean Habimana', 'jhabimana@ferwafa.rw', 'REF001', 'Week 1 + Week 4 (live report demo)'),
+    ('Patrick Niyonzima', 'pniyonzima@ferwafa.rw', 'REF002', 'Week 2 + Week 4 reported'),
+    ('Eric Muvunyi', 'emuvunyi@ferwafa.rw', 'REF003', 'Week 3 fresh assignments'),
+  ];
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,6 +43,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _fill(String email, String code) {
+    setState(() {
+      _emailController.text = email;
+      _codeController.text = code;
+      _error = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
@@ -47,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
             colors: [Color(0xFF0C2A61), Color(0xFF133E8D), Color(0xFFE8EEF8)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            stops: [0, 0.45, 0.45],
+            stops: [0, 0.42, 0.42],
           ),
         ),
         child: SafeArea(
@@ -55,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+                constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
                   children: [
                     Image.asset('assets/images/ferwafa-logo.png', width: 72, height: 72),
@@ -63,8 +77,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text('FERWAFA Referee',
                         style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
-                    const Text('Official match-day reporting', style: TextStyle(color: Colors.white70)),
-                    const SizedBox(height: 28),
+                    const Text('Match Centre · Reports · Alerts', style: TextStyle(color: Colors.white70)),
+                    const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
@@ -83,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 6),
                             Text('Use your federation email and access code',
                                 style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 18),
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -118,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Text(_error!, style: const TextStyle(color: AppTheme.danger, fontSize: 13)),
                               ),
                             ],
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 18),
                             FilledButton(
                               onPressed: auth.loading ? null : _login,
                               child: auth.loading
@@ -129,6 +143,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )
                                   : const Text('Continue'),
                             ),
+                            const SizedBox(height: 18),
+                            Text('Demo referees', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
+                            const SizedBox(height: 8),
+                            ..._demos.map((d) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: OutlinedButton(
+                                    onPressed: () => _fill(d.$2, d.$3),
+                                    style: OutlinedButton.styleFrom(
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('${d.$1} · ${d.$3}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                                        Text(d.$4, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                                      ],
+                                    ),
+                                  ),
+                                )),
                           ],
                         ),
                       ),

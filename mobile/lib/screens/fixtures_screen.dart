@@ -17,6 +17,7 @@ class _FixturesScreenState extends State<FixturesScreen> {
   List<FixtureModel> _fixtures = [];
   bool _loading = true;
   String? _error;
+  bool _authError = false;
   String _filter = 'ALL';
 
   @override
@@ -29,16 +30,28 @@ class _FixturesScreenState extends State<FixturesScreen> {
     setState(() {
       _loading = true;
       _error = null;
+      _authError = false;
     });
     try {
-      final data = await context.read<AuthService>().api.get('/api/fixtures') as List;
+      final auth = context.read<AuthService>();
+      if (!auth.isLoggedIn) {
+        setState(() {
+          _error = 'Session expired. Please sign in again.';
+          _authError = true;
+          _loading = false;
+        });
+        return;
+      }
+      final data = await auth.api.get('/api/fixtures') as List;
       setState(() {
         _fixtures = data.map((e) => FixtureModel.fromJson(Map<String, dynamic>.from(e))).toList();
         _loading = false;
       });
     } catch (e) {
+      final msg = e.toString().replaceFirst('Exception: ', '');
       setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
+        _error = msg;
+        _authError = msg.toLowerCase().contains('auth') || msg.toLowerCase().contains('unauthorized');
         _loading = false;
       });
     }
@@ -72,7 +85,19 @@ class _FixturesScreenState extends State<FixturesScreen> {
                   Text('Hello, ${auth.displayName?.split(' ').first ?? 'Referee'}',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
-                  Text('Your assigned match centre', style: TextStyle(color: Colors.grey.shade600)),
+                  Text('Assigned matches, reports & matchday tools', style: TextStyle(color: Colors.grey.shade600)),
+                  if (_fixtures.any((f) => f.week >= 4)) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: AppTheme.brandSoft, borderRadius: BorderRadius.circular(12)),
+                      child: const Text(
+                        'Demo: Week 4 fixtures are ready — open a REFEREE ASSIGNED / PLAYED match to submit a live report.',
+                        style: TextStyle(color: AppTheme.brand, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -125,9 +150,29 @@ class _FixturesScreenState extends State<FixturesScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.danger)),
+                      Icon(_authError ? Icons.lock_outline : Icons.error_outline,
+                          size: 40, color: AppTheme.danger),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: _load, child: const Text('Retry')),
+                      Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.danger)),
+                      const SizedBox(height: 8),
+                      Text(
+                        _authError
+                            ? 'Your session ended (common after a server restart). Sign in again to load matches.'
+                            : 'Check your connection and try again.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_authError)
+                        FilledButton.icon(
+                          onPressed: () async {
+                            await context.read<AuthService>().logout();
+                          },
+                          icon: const Icon(Icons.login),
+                          label: const Text('Sign in again'),
+                        )
+                      else
+                        FilledButton(onPressed: _load, child: const Text('Retry')),
                     ],
                   ),
                 ),
@@ -201,20 +246,38 @@ class _FixturesScreenState extends State<FixturesScreen> {
                                       style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.brand)),
                               ],
                             ),
-                            if (f.canSubmitReport) ...[
+                            if (f.canSubmitReport || f.status == 'APPROVED') ...[
                               const SizedBox(height: 12),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.brandSoft,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  f.status == 'REPORTED' ? 'Review / update report' : 'Open match report',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(color: AppTheme.brand, fontWeight: FontWeight.w700),
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => MatchHubScreen(fixture: f, initialTab: 1),
+                                        ),
+                                      ).then((_) => _load()),
+                                      icon: const Icon(Icons.checklist, size: 18),
+                                      label: const Text('Prep'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: FilledButton.icon(
+                                      onPressed: f.canSubmitReport
+                                          ? () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => MatchHubScreen(fixture: f, initialTab: 4),
+                                                ),
+                                              ).then((_) => _load())
+                                          : null,
+                                      icon: const Icon(Icons.edit_note, size: 18),
+                                      label: Text(f.status == 'REPORTED' ? 'Update' : 'Report'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ],

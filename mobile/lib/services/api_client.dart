@@ -1,15 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import 'auth_exception.dart';
 
 class ApiClient {
   String? _token;
+  void Function()? onUnauthorized;
 
   void setToken(String? token) => _token = token;
 
+  bool get hasToken => _token != null && _token!.trim().isNotEmpty;
+
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        if (_token != null) 'Authorization': 'Bearer $_token',
+        'Accept': 'application/json',
+        if (hasToken) 'Authorization': 'Bearer ${_token!.trim()}',
       };
 
   Future<dynamic> get(String path) async {
@@ -26,11 +31,11 @@ class ApiClient {
     return _handle(res);
   }
 
-  Future<dynamic> put(String path, Map<String, dynamic> body) async {
+  Future<dynamic> put(String path, [Map<String, dynamic>? body]) async {
     final res = await http.put(
       Uri.parse('${ApiConfig.baseUrl}$path'),
       headers: _headers,
-      body: jsonEncode(body),
+      body: body == null ? null : jsonEncode(body),
     );
     return _handle(res);
   }
@@ -44,6 +49,11 @@ class ApiClient {
     try {
       if (res.body.isNotEmpty) err = jsonDecode(res.body);
     } catch (_) {}
-    throw Exception(err['message'] ?? 'Request failed (${res.statusCode})');
+    final message = (err['message'] ?? 'Request failed (${res.statusCode})').toString();
+    if (res.statusCode == 401) {
+      onUnauthorized?.call();
+      throw AuthException(message, statusCode: 401);
+    }
+    throw Exception(message);
   }
 }

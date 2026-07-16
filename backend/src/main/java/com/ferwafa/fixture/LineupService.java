@@ -34,7 +34,8 @@ public class LineupService {
 
     @Transactional(readOnly = true)
     public List<LineupResponse> getLineup(Long fixtureId, Long teamId) {
-        teamService.assertTeamAccess(teamId);
+        // Referees need read access to review starting XIs on matchday
+        teamService.assertTeamReadAccess(teamId);
         List<SuspensionDto> suspensions = suspensionService.getSuspendedPlayers(teamId, fixtureId);
         Map<Long, SuspensionDto> suspensionMap = suspensions.stream()
                 .collect(Collectors.toMap(SuspensionDto::getMemberId, s -> s));
@@ -58,7 +59,7 @@ public class LineupService {
 
     @Transactional(readOnly = true)
     public List<LineupResponse> getLineupWithEligibility(Long fixtureId, Long teamId) {
-        teamService.assertTeamAccess(teamId);
+        teamService.assertTeamReadAccess(teamId);
         List<SuspensionDto> suspensions = suspensionService.getSuspendedPlayers(teamId, fixtureId);
         Map<Long, SuspensionDto> suspensionMap = suspensions.stream()
                 .collect(Collectors.toMap(SuspensionDto::getMemberId, s -> s));
