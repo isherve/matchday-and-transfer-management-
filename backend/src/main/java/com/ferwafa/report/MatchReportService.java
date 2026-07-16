@@ -1,5 +1,6 @@
 package com.ferwafa.report;
 
+import com.ferwafa.auth.AuthService;
 import com.ferwafa.common.BusinessException;
 import com.ferwafa.common.FixtureStatus;
 import com.ferwafa.common.NotificationType;
@@ -13,7 +14,11 @@ import com.ferwafa.fixture.FixtureService;
 import com.ferwafa.member.MemberService;
 import com.ferwafa.member.TeamMember;
 import com.ferwafa.notification.NotificationService;
+import com.ferwafa.referee.Referee;
 import com.ferwafa.referee.RefereeService;
+import com.ferwafa.report.dto.MatchReportCommentRequest;
+import com.ferwafa.report.dto.MatchReportCommentResponse;
+import com.ferwafa.report.dto.MatchReportEditLogResponse;
 import com.ferwafa.report.dto.MatchReportEntryRequest;
 import com.ferwafa.report.dto.MatchReportResponse;
 import com.ferwafa.report.dto.MatchReportSubmitRequest;
@@ -32,6 +37,8 @@ import java.util.stream.Collectors;
 public class MatchReportService {
 
     private final MatchReportRepository matchReportRepository;
+    private final MatchReportCommentRepository commentRepository;
+    private final MatchReportEditLogRepository editLogRepository;
     private final FixtureRepository fixtureRepository;
     private final FixtureService fixtureService;
     private final MemberService memberService;
@@ -39,6 +46,7 @@ public class MatchReportService {
     private final SuspensionService suspensionService;
     private final SecurityUtils securityUtils;
     private final NotificationService notificationService;
+    private final AuthService authService;
 
     @Transactional(readOnly = true)
     public List<MatchReportResponse> getReports(Long fixtureId) {
@@ -51,19 +59,47 @@ public class MatchReportService {
         if (!securityUtils.isReferee()) {
             throw new BusinessException("Only referees can submit match reports", HttpStatus.FORBIDDEN);
         }
+        return upsertReport(fixtureId, request, "SUBMITTED", true);
+    }
 
+    @Transactional
+    public List<MatchReportResponse> adminUpdateReport(Long fixtureId, MatchReportSubmitRequest request) {
+        if (!securityUtils.isAdmin()) {
+            throw new BusinessException("Only admin can edit match reports", HttpStatus.FORBIDDEN);
+        }
+        return upsertReport(fixtureId, request, "UPDATED", false);
+    }
+
+    private List<MatchReportResponse> upsertReport(Long fixtureId, MatchReportSubmitRequest request,
+                                                   String action, boolean notifyAdmin) {
         Fixture fixture = fixtureService.getFixture(fixtureId);
-        Long refereeId = securityUtils.currentEntityId();
+        boolean admin = securityUtils.isAdmin();
+        boolean referee = securityUtils.isReferee();
 
-        if (fixture.getReferee() == null || !fixture.getReferee().getRefereeId().equals(refereeId)) {
-            throw new BusinessException("You are not assigned to this fixture", HttpStatus.FORBIDDEN);
+        if (!admin && !referee) {
+            throw new BusinessException("Not allowed to edit this report", HttpStatus.FORBIDDEN);
         }
 
-        if (fixture.getStatus() == FixtureStatus.APPROVED) {
-            throw new BusinessException("Report already approved and cannot be modified");
+        if (referee) {
+            Long refereeId = securityUtils.currentEntityId();
+            if (fixture.getReferee() == null || !fixture.getReferee().getRefereeId().equals(refereeId)) {
+                throw new BusinessException("You are not assigned to this fixture", HttpStatus.FORBIDDEN);
+            }
+            if (fixture.getStatus() == FixtureStatus.APPROVED) {
+                throw new BusinessException("Report already approved and cannot be modified");
+            }
         }
 
-        var referee = refereeService.getReferee(refereeId);
+        Referee reportReferee = fixture.getReferee();
+        if (reportReferee == null && referee) {
+            reportReferee = refereeService.getReferee(securityUtils.currentEntityId());
+        }
+        if (reportReferee == null) {
+            throw new BusinessException("Assign a referee before editing the match report");
+        }
+
+        boolean wasApproved = fixture.getStatus() == FixtureStatus.APPROVED;
+        ReportStatus entryStatus = wasApproved ? ReportStatus.APPROVED : ReportStatus.SUBMITTED;
 
         matchReportRepository.findByFixtureId(fixtureId).forEach(matchReportRepository::delete);
 
@@ -88,8 +124,8 @@ public class MatchReportService {
                     .card(entry.getCard() != null ? entry.getCard() : com.ferwafa.common.CardType.NONE)
                     .cardMin(entry.getCardMin())
                     .week(fixture.getWeek())
-                    .status(ReportStatus.SUBMITTED)
-                    .submittedByReferee(referee)
+                    .status(entryStatus)
+                    .submittedByReferee(reportReferee)
                     .build();
             saved.add(matchReportRepository.save(report));
 
@@ -103,14 +139,25 @@ public class MatchReportService {
 
         fixture.setHomeScore(homeGoals);
         fixture.setAwayScore(awayGoals);
-        fixture.setStatus(FixtureStatus.REPORTED);
+        if (!wasApproved) {
+            fixture.setStatus(FixtureStatus.REPORTED);
+        }
         fixtureRepository.save(fixture);
 
-        notificationService.notify(UserRole.ADMIN, 1L,
-                "Match report submitted",
-                fixture.getHomeTeam().getName() + " vs " + fixture.getAwayTeam().getName()
-                        + " (" + homeGoals + "-" + awayGoals + ") awaits approval",
-                NotificationType.REPORT_SUBMITTED, "FIXTURE", fixtureId);
+        var me = authService.me();
+        int entryCount = saved.size();
+        logEdit(fixture, action,
+                me.getDisplayName() + " saved " + entryCount + " report entr"
+                        + (entryCount == 1 ? "y" : "ies")
+                        + " (" + homeGoals + "-" + awayGoals + ")");
+
+        if (notifyAdmin && !admin) {
+            notificationService.notify(UserRole.ADMIN, 1L,
+                    "Match report submitted",
+                    fixture.getHomeTeam().getName() + " vs " + fixture.getAwayTeam().getName()
+                            + " (" + homeGoals + "-" + awayGoals + ") awaits approval",
+                    NotificationType.REPORT_SUBMITTED, "FIXTURE", fixtureId);
+        }
 
         return saved.stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -132,7 +179,6 @@ public class MatchReportService {
         }
 
         List<MatchReport> reports = matchReportRepository.findByFixtureId(fixtureId);
-        // Recompute official scores from approved entries for audit integrity
         int homeGoals = 0;
         int awayGoals = 0;
         Long homeId = fixture.getHomeTeam().getTeamId();
@@ -161,6 +207,10 @@ public class MatchReportService {
         fixtureRepository.save(fixture);
         suspensionService.processApprovedReports(fixtureId);
 
+        var me = authService.me();
+        logEdit(fixture, "APPROVED",
+                me.getDisplayName() + " approved the match report (" + homeGoals + "-" + awayGoals + ")");
+
         notificationService.notify(UserRole.TEAM, homeId,
                 "Match result approved",
                 fixture.getHomeTeam().getName() + " " + homeGoals + "-" + awayGoals + " "
@@ -173,6 +223,43 @@ public class MatchReportService {
                 NotificationType.REPORT_APPROVED, "FIXTURE", fixtureId);
 
         return reports.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchReportCommentResponse> getComments(Long fixtureId) {
+        fixtureService.getFixture(fixtureId);
+        return commentRepository.findByFixtureIdOrderByCreatedAtAsc(fixtureId).stream()
+                .map(this::toCommentResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public MatchReportCommentResponse addComment(Long fixtureId, MatchReportCommentRequest request) {
+        if (!securityUtils.isAdmin() && !securityUtils.isReferee()) {
+            throw new BusinessException("Only admin or referee can comment", HttpStatus.FORBIDDEN);
+        }
+        Fixture fixture = fixtureService.getFixture(fixtureId);
+        if (securityUtils.isReferee()) {
+            Long refereeId = securityUtils.currentEntityId();
+            if (fixture.getReferee() == null || !fixture.getReferee().getRefereeId().equals(refereeId)) {
+                throw new BusinessException("You are not assigned to this fixture", HttpStatus.FORBIDDEN);
+            }
+        }
+        var me = authService.me();
+        MatchReportComment comment = MatchReportComment.builder()
+                .fixture(fixture)
+                .body(request.getBody().trim())
+                .authorRole(me.getRole())
+                .authorName(me.getDisplayName())
+                .authorEntityId(me.getEntityId())
+                .build();
+        return toCommentResponse(commentRepository.save(comment));
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchReportEditLogResponse> getEditLogs(Long fixtureId) {
+        fixtureService.getFixture(fixtureId);
+        return editLogRepository.findByFixtureIdOrderByCreatedAtDesc(fixtureId).stream()
+                .map(this::toEditLogResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -191,6 +278,18 @@ public class MatchReportService {
     public List<MatchReportResponse> getAllReports() {
         return matchReportRepository.findAll().stream()
                 .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    private void logEdit(Fixture fixture, String action, String summary) {
+        var me = authService.me();
+        editLogRepository.save(MatchReportEditLog.builder()
+                .fixture(fixture)
+                .editorRole(me.getRole())
+                .editorName(me.getDisplayName())
+                .editorEntityId(me.getEntityId())
+                .action(action)
+                .summary(summary)
+                .build());
     }
 
     private MatchReportResponse toResponse(MatchReport report) {
@@ -214,6 +313,33 @@ public class MatchReportService {
                 .status(report.getStatus())
                 .submittedByRefereeId(referee.getRefereeId())
                 .refereeName(referee.getFname() + " " + referee.getLname())
+                .createdAt(report.getCreatedAt())
+                .updatedAt(report.getUpdatedAt())
+                .build();
+    }
+
+    private MatchReportCommentResponse toCommentResponse(MatchReportComment c) {
+        return MatchReportCommentResponse.builder()
+                .id(c.getId())
+                .fixtureId(c.getFixture().getId())
+                .body(c.getBody())
+                .authorRole(c.getAuthorRole())
+                .authorName(c.getAuthorName())
+                .authorEntityId(c.getAuthorEntityId())
+                .createdAt(c.getCreatedAt())
+                .build();
+    }
+
+    private MatchReportEditLogResponse toEditLogResponse(MatchReportEditLog e) {
+        return MatchReportEditLogResponse.builder()
+                .id(e.getId())
+                .fixtureId(e.getFixture().getId())
+                .editorRole(e.getEditorRole())
+                .editorName(e.getEditorName())
+                .editorEntityId(e.getEditorEntityId())
+                .action(e.getAction())
+                .summary(e.getSummary())
+                .createdAt(e.getCreatedAt())
                 .build();
     }
 }

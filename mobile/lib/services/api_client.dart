@@ -26,12 +26,24 @@ class ApiClient {
     return _handle(res);
   }
 
+  Future<dynamic> put(String path, Map<String, dynamic> body) async {
+    final res = await http.put(
+      Uri.parse('${ApiConfig.baseUrl}$path'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+    return _handle(res);
+  }
+
   dynamic _handle(http.Response res) {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       if (res.body.isEmpty) return null;
       return jsonDecode(res.body);
     }
-    final err = res.body.isNotEmpty ? jsonDecode(res.body) : {};
+    dynamic err = {};
+    try {
+      if (res.body.isNotEmpty) err = jsonDecode(res.body);
+    } catch (_) {}
     throw Exception(err['message'] ?? 'Request failed (${res.statusCode})');
   }
 }

@@ -90,6 +90,8 @@ public class AdminWebController {
     public String matchReportDetail(@PathVariable Long fixtureId, Model model) {
         model.addAttribute("fixture", fixtureService.findById(fixtureId));
         model.addAttribute("entries", matchReportService.getReports(fixtureId));
+        model.addAttribute("comments", matchReportService.getComments(fixtureId));
+        model.addAttribute("editLogs", matchReportService.getEditLogs(fixtureId));
         return "admin/report-detail";
     }
 
