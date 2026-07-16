@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Match Report')}"></head>
 <body class="app-body">
@@ -7,29 +7,32 @@
 <main class="app-main">
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <a href="/admin/reports" class="text-decoration-none small">â† Back to approvals</a>
+            <a href="/admin/reports" class="text-decoration-none small">&larr; Back to approvals</a>
             <h2 class="mt-1" th:text="${fixture.homeTeamName + ' vs ' + fixture.awayTeamName}">Match</h2>
             <p class="text-muted mb-0">
                 Week <span th:text="${fixture.week}"></span>
-                Â· <span th:text="${fixture.matchDate}"></span>
-                Â· <span th:text="${fixture.stadium}"></span>
-                Â· Referee: <span th:text="${fixture.refereeName} ?: 'â€”'"></span>
+                &middot; <span th:text="${fixture.matchDate}"></span>
+                &middot; <span th:text="${fixture.stadium}"></span>
+                &middot; Referee: <span th:text="${fixture.refereeName} ?: '—'"></span>
             </p>
         </div>
         <div class="text-end">
             <div class="display-6 fw-bold text-success"
                  th:if="${fixture.homeScore != null}"
-                 th:text="${fixture.homeScore + ' â€“ ' + fixture.awayScore}">0 â€“ 0</div>
+                 th:text="${fixture.homeScore + ' – ' + fixture.awayScore}">0 – 0</div>
             <span class="badge bg-secondary" th:text="${fixture.status}"></span>
         </div>
     </div>
 
     <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span>Match report entries</span>
-            <button class="btn btn-sm btn-success"
-                    th:if="${fixture.status.name() == 'REPORTED' and !entries.isEmpty()}"
-                    th:onclick="'approve(' + ${entries[0].reportId} + ')'">Approve entire report</button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" type="button" onclick="openEditReport()">Edit report</button>
+                <button class="btn btn-sm btn-success"
+                        th:if="${fixture.status.name() == 'REPORTED' and !entries.isEmpty()}"
+                        th:onclick="'approve(' + ${entries[0].reportId} + ')'">Approve entire report</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table mb-0">
@@ -42,6 +45,7 @@
                     <th>Card</th>
                     <th>Card min</th>
                     <th>Status</th>
+                    <th>Updated</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -49,28 +53,100 @@
                     <td th:text="${e.playerName}"></td>
                     <td th:text="${e.teamName}"></td>
                     <td th:text="${e.goal}"></td>
-                    <td th:text="${e.goalMin} ?: 'â€”'"></td>
+                    <td th:text="${e.goalMin} ?: '—'"></td>
                     <td>
                         <span th:if="${e.card.name() == 'YELLOW'}" class="badge text-bg-warning">YELLOW</span>
                         <span th:if="${e.card.name() == 'RED'}" class="badge text-bg-danger">RED</span>
                         <span th:if="${e.card.name() == 'NONE'}" class="text-muted">NONE</span>
                     </td>
-                    <td th:text="${e.cardMin} ?: 'â€”'"></td>
+                    <td th:text="${e.cardMin} ?: '—'"></td>
                     <td>
                         <span th:class="${e.status.name() == 'APPROVED' ? 'badge text-bg-success' : 'badge text-bg-warning text-dark'}"
                               th:text="${e.status}"></span>
                     </td>
+                    <td class="small text-muted"
+                        th:text="${e.updatedAt != null ? #temporals.format(e.updatedAt, 'dd MMM yyyy HH:mm') : '—'}"></td>
                 </tr>
                 <tr th:if="${entries.isEmpty()}">
-                    <td colspan="7" class="text-center text-muted py-4">No report entries for this fixture yet.</td>
+                    <td colspan="8" class="text-center text-muted py-4">No report entries for this fixture yet.</td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">Comments</div>
+                <div class="card-body">
+                    <div id="commentsList" class="mb-3">
+                        <div th:each="c : ${comments}" class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong th:text="${c.authorName}">Name</strong>
+                                <span class="small text-muted"
+                                      th:text="${#temporals.format(c.createdAt, 'dd MMM yyyy HH:mm')}"></span>
+                            </div>
+                            <div class="small text-muted mb-1" th:text="${c.authorRole}"></div>
+                            <div th:text="${c.body}" style="white-space: pre-wrap;"></div>
+                        </div>
+                        <p th:if="${comments.isEmpty()}" class="text-muted mb-0">No comments yet.</p>
+                    </div>
+                    <label class="form-label" for="commentBody">Add comment</label>
+                    <textarea id="commentBody" class="form-control mb-2" rows="3"
+                              placeholder="Notes, incidents, corrections…"></textarea>
+                    <button class="btn btn-primary" type="button" onclick="postComment()">Post comment</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header">Edit history</div>
+                <ul class="list-group list-group-flush">
+                    <li th:each="e : ${editLogs}" class="list-group-item">
+                        <div class="d-flex justify-content-between gap-2">
+                            <strong th:text="${e.editorName}">Editor</strong>
+                            <span class="small text-muted"
+                                  th:text="${#temporals.format(e.createdAt, 'dd MMM yyyy HH:mm')}"></span>
+                        </div>
+                        <div class="small text-muted" th:text="${e.editorRole + ' · ' + e.action}"></div>
+                        <div th:text="${e.summary}"></div>
+                    </li>
+                    <li th:if="${editLogs.isEmpty()}" class="list-group-item text-muted">No edits logged yet.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </main>
+
+<div class="modal fade" id="editReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit match report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Change goals and cards for any player. Your name and time will be logged.</p>
+                <div id="editPlayers" class="vstack gap-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveReport()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:replace="~{fragments/layout :: scripts}"></script>
-<script>
+<script th:inline="javascript">
+const fixtureId = /*[[${fixture.id}]]*/ 0;
+const homeTeamId = /*[[${fixture.homeTeamId}]]*/ 0;
+const awayTeamId = /*[[${fixture.awayTeamId}]]*/ 0;
+const existingEntries = /*[[${entries}]]*/ [];
+
+let editState = [];
+
 async function approve(id) {
     if (!confirm('Approve this match report? Suspensions will be applied.')) return;
     try {
@@ -79,7 +155,91 @@ async function approve(id) {
         setTimeout(() => location.reload(), 800);
     } catch (e) { showToast(e.message, 'danger'); }
 }
+
+async function postComment() {
+    const body = document.getElementById('commentBody').value.trim();
+    if (!body) { showToast('Enter a comment', 'danger'); return; }
+    try {
+        await apiCall('POST', `/api/fixtures/${fixtureId}/report/comments`, { body });
+        showToast('Comment posted');
+        setTimeout(() => location.reload(), 600);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+
+async function openEditReport() {
+    try {
+        const [home, away] = await Promise.all([
+            apiCall('GET', `/api/teams/${homeTeamId}/members`),
+            apiCall('GET', `/api/teams/${awayTeamId}/members`),
+        ]);
+        const byMember = Object.fromEntries((existingEntries || []).map(e => [e.teamMemberId, e]));
+        editState = [];
+        const wrap = document.getElementById('editPlayers');
+        wrap.innerHTML = '';
+        const players = [...(home || []), ...(away || [])].filter(m => m.roleInTeam === 'PLAYER');
+        players.forEach(m => {
+            const existing = byMember[m.memberId] || {};
+            const row = {
+                teamMemberId: m.memberId,
+                name: `${m.fname} ${m.lname}`,
+                team: m.teamName || '',
+                number: m.number,
+                goal: existing.goal || 0,
+                goalMin: existing.goalMin || '',
+                card: existing.card || 'NONE',
+                cardMin: existing.cardMin || '',
+            };
+            editState.push(row);
+            const el = document.createElement('div');
+            el.className = 'border rounded p-3';
+            el.innerHTML = `
+              <div class="fw-semibold mb-2">#${row.number ?? '-'} ${row.name} <span class="text-muted small">${row.team}</span></div>
+              <div class="row g-2">
+                <div class="col-md-3"><label class="form-label small">Goals</label>
+                  <input type="number" min="0" class="form-control form-control-sm" data-f="goal" data-id="${row.teamMemberId}" value="${row.goal}"></div>
+                <div class="col-md-3"><label class="form-label small">Goal min</label>
+                  <input type="number" min="1" max="120" class="form-control form-control-sm" data-f="goalMin" data-id="${row.teamMemberId}" value="${row.goalMin}"></div>
+                <div class="col-md-3"><label class="form-label small">Card</label>
+                  <select class="form-select form-select-sm" data-f="card" data-id="${row.teamMemberId}">
+                    <option value="NONE"${row.card === 'NONE' ? ' selected' : ''}>NONE</option>
+                    <option value="YELLOW"${row.card === 'YELLOW' ? ' selected' : ''}>YELLOW</option>
+                    <option value="RED"${row.card === 'RED' ? ' selected' : ''}>RED</option>
+                  </select></div>
+                <div class="col-md-3"><label class="form-label small">Card min</label>
+                  <input type="number" min="1" max="120" class="form-control form-control-sm" data-f="cardMin" data-id="${row.teamMemberId}" value="${row.cardMin}"></div>
+              </div>`;
+            wrap.appendChild(el);
+        });
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('editReportModal')).show();
+    } catch (e) { showToast(e.message, 'danger'); }
+}
+
+async function saveReport() {
+    document.querySelectorAll('#editPlayers [data-f]').forEach(input => {
+        const id = Number(input.dataset.id);
+        const row = editState.find(r => r.teamMemberId === id);
+        if (!row) return;
+        const f = input.dataset.f;
+        if (f === 'card') row.card = input.value;
+        else if (f === 'goal') row.goal = parseInt(input.value || '0', 10);
+        else if (f === 'goalMin') row.goalMin = input.value === '' ? null : parseInt(input.value, 10);
+        else if (f === 'cardMin') row.cardMin = input.value === '' ? null : parseInt(input.value, 10);
+    });
+    const entries = editState
+        .filter(r => (r.goal || 0) > 0 || (r.card && r.card !== 'NONE'))
+        .map(r => ({
+            teamMemberId: r.teamMemberId,
+            goal: r.goal || 0,
+            goalMin: r.goalMin || null,
+            card: r.card || 'NONE',
+            cardMin: r.cardMin || null,
+        }));
+    try {
+        await apiCall('PUT', `/api/fixtures/${fixtureId}/report`, { entries });
+        showToast('Report updated — edit logged with your name');
+        setTimeout(() => location.reload(), 700);
+    } catch (e) { showToast(e.message, 'danger'); }
+}
 </script>
 </body>
 </html>
-

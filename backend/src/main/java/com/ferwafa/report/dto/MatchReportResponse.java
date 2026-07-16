@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -26,4 +28,6 @@ public class MatchReportResponse {
     private ReportStatus status;
     private Long submittedByRefereeId;
     private String refereeName;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
